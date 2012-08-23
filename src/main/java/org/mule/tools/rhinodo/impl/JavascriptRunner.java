@@ -1,14 +1,10 @@
 package org.mule.tools.rhinodo.impl;
 
+import org.mozilla.javascript.*;
 import org.mule.tools.rhinodo.api.NodeModuleFactory;
 import org.mule.tools.rhinodo.api.Runnable;
-import org.mozilla.javascript.Context;
 import org.mule.tools.rhinodo.rhino.NodeJsGlobal;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -39,15 +35,27 @@ public class JavascriptRunner {
         try {
             global.installNodeJsRequire(ctx, nodeModuleFactory, false);
 
-            ctx.evaluateReader(global, new FileReader(
-                    new File(getURIFromResources(this.getClass(), "META-INF/env/builtins.js").getPath())), "builtins", -1, null);
+            NativeObject console = new NativeObject();
+            console.put("log", console, new BaseFunction() {
+                @Override
+                public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                    if(args.length > 0) {
+                        System.out.println(args[0]);
+                    } else {
+                        System.out.println("undefined");
+                    }
+                    return Undefined.instance;
+                }
+            });
+            global.put("console", global, console);
+
+            NativeObject process = new NativeObject();
+            process.put("platform", process, Context.toString("darwin"));
+            process.put("env",  process, new NativeObject());
+            global.put("process", global, process);
 
             runnable.run(ctx, global);
 
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } finally {
             Context.exit();
         }

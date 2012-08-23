@@ -46,13 +46,6 @@ public class NodeModuleImpl implements NodeModule {
         }
         File main = new File(root.getFile(), main1);
 
-        if(!main.exists() && !main.toString().endsWith(".js")) {
-            main = new File(main +".js");
-            if(!main.exists()) {
-                throw new IllegalStateException(String.format("Error: Module [%s] not found.", main));
-            }
-        }
-
         this.name = map.get("name");
         this.path = main.toURI();
     }

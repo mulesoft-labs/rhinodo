@@ -12,9 +12,14 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NodeJsGlobal extends Global {
+    @Override
+    public Require installRequire(Context cx, List<String> modulePath, boolean sandboxed) {
+        return super.installRequire(cx, modulePath, sandboxed);
+    }
 
     public Require installNodeJsRequire(Context cx, NodeModuleFactory nodeModuleFactory, boolean sandboxed) {
         RequireBuilder rb = new RequireBuilder();
