@@ -1,8 +1,15 @@
 package org.mule.tools.rhinodo.tools;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 public class JarURIHelper {
 
@@ -38,4 +45,39 @@ public class JarURIHelper {
     public URL getJarURL() {
         return this.jarURL;
     }
+
+    public boolean exists() {
+        String insideJarRelativePath = getInsideJarRelativePath();
+        return getEntryList().containsKey(insideJarRelativePath);
+    }
+
+    public List<JarEntry> getListOfJarFiles() {
+        URL jarURL = this.getJarURL();
+        List<JarEntry> listOfJarEntries = new ArrayList<JarEntry>();
+
+        JarInputStream jarInputStream;
+        try {
+            jarInputStream = new JarInputStream(jarURL.openStream());
+            JarEntry jarEntry;
+            while( (jarEntry = jarInputStream.getNextJarEntry() ) != null ) {
+                listOfJarEntries.add(jarEntry);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return listOfJarEntries;
+    }
+
+    public Map<String, JarEntry> getEntryList() {
+        Map<String, JarEntry> entryList = new HashMap<String, JarEntry>();
+        List<JarEntry> listOfJarFiles = getListOfJarFiles();
+
+        for (JarEntry jarEntry : listOfJarFiles) {
+            entryList.put(jarEntry.getName(), jarEntry);
+        }
+
+        return entryList;
+    }
+
 }

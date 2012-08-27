@@ -21,8 +21,7 @@ public class NodeJsGlobal extends Global {
         return super.installRequire(cx, modulePath, sandboxed);
     }
 
-    public Require installNodeJsRequire(Context cx, NodeModuleFactory nodeModuleFactory, boolean sandboxed) {
-        RequireBuilder rb = new RequireBuilder();
+    public Require installNodeJsRequire(Context cx, NodeModuleFactory nodeModuleFactory, RequireBuilder rb, boolean sandboxed) {
         rb.setSandboxed(sandboxed);
         Map<String, URI> uris = new HashMap<String, URI>();
         if (nodeModuleFactory != null) {

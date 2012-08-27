@@ -6,16 +6,10 @@ import org.mule.tools.rhinodo.tools.JarURIHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
 
 public class NodeJsUrlModuleSourceProvider extends UrlModuleSourceProvider {
 
@@ -56,9 +50,15 @@ public class NodeJsUrlModuleSourceProvider extends UrlModuleSourceProvider {
             throw new RuntimeException(String.format("Module loading [%s] scheme not supported.",basePath.getScheme()));
         }
 
+        String pathAsString = path.toString();
+        int lastIndex = 0;
+        if ( (lastIndex = pathAsString.lastIndexOf("/") ) == pathAsString.length() - 1  ) {
+            lastIndex = pathAsString.lastIndexOf("/", pathAsString.lastIndexOf("/") - 1);
+        }
+        URI newBasePath = URI.create(pathAsString.substring(0,lastIndex + 1));
 
         final ModuleSource moduleSource = loadFromUri(
-                path, basePath, validator);
+                path, newBasePath, validator);
 
         if (moduleSource != null) {
             return moduleSource;
@@ -66,47 +66,61 @@ public class NodeJsUrlModuleSourceProvider extends UrlModuleSourceProvider {
         return null;
     }
 
-    public List<JarEntry> getListOfJarFiles(JarURIHelper jarHelper) {
-        URL jarURL = jarHelper.getJarURL();
-        List<JarEntry> listOfJarEntries = new ArrayList<JarEntry>();
-
-        JarInputStream jarInputStream;
-        try {
-            jarInputStream = new JarInputStream(jarURL.openStream());
-            JarEntry jarEntry;
-            while( (jarEntry = jarInputStream.getNextJarEntry() ) != null ) {
-                listOfJarEntries.add(jarEntry);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return listOfJarEntries;
-    }
-
     private URI getModuleRealURIWithJarScheme(URI basePath) {
         JarURIHelper jarHelper = new JarURIHelper(basePath);
-
-        List<JarEntry> listOfJarFiles = getListOfJarFiles(jarHelper);
-        Map<String, JarEntry> entryList = new HashMap<String, JarEntry>();
-
-        for (JarEntry jarEntry : listOfJarFiles) {
-            entryList.put(jarEntry.getName(), jarEntry);
-        }
+        Map<String, JarEntry> entryList = jarHelper.getEntryList();
 
         String insideJarRelativePath = jarHelper.getInsideJarRelativePath();
         String substring = insideJarRelativePath.substring(0, insideJarRelativePath.length() - 1);
+
+        URI uri = resolverFile(basePath, entryList, insideJarRelativePath, substring);
+        if(uri == null) {
+            uri = resolverFile(basePath,entryList, insideJarRelativePath,insideJarRelativePath);
+        }
+
+        if (uri == null ) {
+            throw new IllegalArgumentException(String.format("Error: invalid jar path [%s]", basePath));
+        }
+        return uri;
+    }
+
+    private URI sanitizeURI(URI uri, String suffix)  {
+        String string = uri.toString();
+        if (string.endsWith("/")) {
+            try {
+                return new URI(string.substring(0, string.length() - 1) + suffix);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        try {
+            return new URI(string + suffix);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private URI resolverFile(URI basePath, Map<String, JarEntry> entryList, String insideJarRelativePath, String substring) {
         if ( !entryList.containsKey(substring) ) {
-            if ( !entryList.containsKey(insideJarRelativePath + ".js/") ) {
-                throw new IllegalArgumentException(String.format("Error: invalid jar path [%s]", basePath));
+            if ( entryList.containsKey(insideJarRelativePath + ".js/") ) {
+                return sanitizeURI(basePath, ".js");
+            } else if ( entryList.containsKey(insideJarRelativePath + ".js") ) {
+                return sanitizeURI(basePath, ".js");
+            } if ( entryList.containsKey(substring+ ".js/") ) {
+                return sanitizeURI(basePath, ".js");
+            } else if ( entryList.containsKey(substring + ".js") ) {
+                return sanitizeURI(basePath, ".js");
             } else {
-                return URI.create(basePath.toString() + ".js");
+                return null;
             }
         } else if ( entryList.get(substring).isDirectory() ) {
-            if ( !entryList.containsKey(insideJarRelativePath + "/index.js") ) {
-                throw new IllegalArgumentException(String.format("Error: invalid jar path [%s]", basePath));
+            if ( entryList.containsKey(insideJarRelativePath + "/index.js") ) {
+                return sanitizeURI(basePath, "/index.js");
+            } else if (entryList.containsKey(substring + "index.js") ) {
+                return sanitizeURI(basePath, "/index.js");
             } else {
-                return URI.create(basePath.toString() + "/index.js");
+                return null;
             }
         }
 
@@ -114,7 +128,7 @@ public class NodeJsUrlModuleSourceProvider extends UrlModuleSourceProvider {
             try {
                 return new URI(basePath.toString().substring(0,basePath.toString().length()-1));
             } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
+                return null;
             }
         }
 

@@ -1,3 +1,7 @@
+(function() {
+
+importPackage(java.io);
+
 exports.join = function() {
   var path = "";
 
@@ -16,3 +20,6 @@ exports.join = function() {
 exports.dirname = function(file) {
     return new File(file).getParent();
 };
+
+
+}());

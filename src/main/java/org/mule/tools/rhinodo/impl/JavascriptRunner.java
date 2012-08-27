@@ -4,16 +4,21 @@ import org.mozilla.javascript.*;
 import org.mule.tools.rhinodo.api.NodeModuleFactory;
 import org.mule.tools.rhinodo.api.Runnable;
 import org.mule.tools.rhinodo.rhino.NodeJsGlobal;
+import org.mule.tools.rhinodo.rhino.NodeRequireBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
 
 public class JavascriptRunner {
 
     private URI env;
     private NodeModuleFactory nodeModuleFactory;
     private org.mule.tools.rhinodo.api.Runnable runnable;
+    private final Queue<Function> asyncFunctionQueue = new LinkedList<Function>();
 
 
     public JavascriptRunner(NodeModuleFactoryImpl nodeModuleFactory,
@@ -24,7 +29,7 @@ public class JavascriptRunner {
     }
 
     public void run()  {
-        NodeJsGlobal global = new NodeJsGlobal();
+        final NodeJsGlobal global = new NodeJsGlobal();
 
         Context ctx = Context.enter();
         ctx.setOptimizationLevel(9);
@@ -33,7 +38,7 @@ public class JavascriptRunner {
         global.initStandardObjects(ctx,false);
 
         try {
-            global.installNodeJsRequire(ctx, nodeModuleFactory, false);
+            global.installNodeJsRequire(ctx, nodeModuleFactory, new NodeRequireBuilder(asyncFunctionQueue), false);
 
             NativeObject console = new NativeObject();
             console.put("log", console, new BaseFunction() {
@@ -41,8 +46,16 @@ public class JavascriptRunner {
                 public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
                     if(args.length > 0) {
                         System.out.println(args[0]);
+                        if( args[0] instanceof NativeObject) {
+                            NativeObject args0AsNativeObject = (NativeObject) args[0];
+                            for (Map.Entry<Object, Object> objectObjectEntry : args0AsNativeObject.entrySet()) {
+                                System.out.println(objectObjectEntry.getKey() + " -> " + objectObjectEntry.getValue());
+                            }
+                        } else {
+                            System.out.println(Context.toString(args[0]));
+                        }
                     } else {
-                        System.out.println("undefined");
+                        System.out.println(Context.toString(Undefined.instance));
                     }
                     return Undefined.instance;
                 }
@@ -55,6 +68,11 @@ public class JavascriptRunner {
             global.put("process", global, process);
 
             runnable.run(ctx, global);
+
+            Function asyncToExecute;
+            while ( (asyncToExecute = asyncFunctionQueue.poll()) != null ) {
+                asyncToExecute.call(ctx,global,global,new Object[] {});
+            }
 
         } finally {
             Context.exit();
