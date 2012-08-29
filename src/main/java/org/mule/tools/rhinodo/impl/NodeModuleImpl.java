@@ -34,6 +34,8 @@ public class NodeModuleImpl implements NodeModule {
 
         JarURIHelper jarURIHelper;
 
+        new File(destDir).mkdirs();
+
         try {
             jarURIHelper = new JarURIHelper(root);
             jarURIHelper.copyToFolder(destDir);
