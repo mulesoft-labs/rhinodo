@@ -17,27 +17,42 @@ public class NodeModuleImpl implements NodeModule {
     private URI path;
     private String name;
 
-    public NodeModuleImpl(String rootDirectory) {
+    public static NodeModuleImpl fromJar(Class<?> klass, String rootDirectory, String destDir) {
         if ( rootDirectory == null ) {
             throw new IllegalArgumentException("Error validating rootDirectory");
         }
 
-        ClassLoader classLoader = getClass().getClassLoader();
-        URI root;
+        if ( destDir == null ) {
+            throw new IllegalArgumentException("Error validating destDir");
+        }
+
+        URI root = getRoot(klass, rootDirectory);
+
+        if ( !"jar".equals(root.getScheme())) {
+            throw new IllegalArgumentException("URI must have jar scheme");
+        }
+
+        JarURIHelper jarURIHelper;
+
         try {
-            root = classLoader.getResource(rootDirectory).toURI();
-        } catch (URISyntaxException e) {
+            jarURIHelper = new JarURIHelper(root);
+            jarURIHelper.copyToFolder(destDir);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        if ( root == null ) {
-            throw new IllegalStateException("Error: path not found.");
+        return new NodeModuleImpl(klass, destDir + File.separator + jarURIHelper.getInsideJarRelativePath());
+    }
+
+
+    private NodeModuleImpl(Class<?> klass, String rootDirectory) {
+        if ( rootDirectory == null ) {
+            throw new IllegalArgumentException("Error validating rootDirectory");
         }
-        try {
-            root = new URI(root.toString() + "/");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+
+//        URI root = getRoot(klass, rootDirectory);
+        URI root = new File(rootDirectory + "/").toURI();
+
         URI packageJson;
         try {
             packageJson = new URI(root.toString() + "package.json");
@@ -49,7 +64,8 @@ public class NodeModuleImpl implements NodeModule {
         if ("file".equals(packageJson.getScheme())) {
             exists = new File(packageJson).exists();
         } else if ("jar".equals(packageJson.getScheme())) {
-            exists = new JarURIHelper(packageJson).exists();
+            throw new RuntimeException("jar scheme not supported");
+//            exists = new JarURIHelper(packageJson).exists();
         } else {
             throw new IllegalStateException(String.format("Error: scheme [%s] not supported.",packageJson.getScheme()) );
         }
@@ -79,6 +95,28 @@ public class NodeModuleImpl implements NodeModule {
             throw new RuntimeException(e);
         }
         this.name = map.get("name");
+    }
+
+    private static URI getRoot(Class<?> klass, String rootDirectory) {
+        ClassLoader classLoader = klass.getClassLoader();
+        URI root;
+        try {
+            root = classLoader.getResource(rootDirectory).toURI();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        if ( root == null ) {
+            throw new IllegalStateException("Error: path not found.");
+        }
+
+        try {
+            root = new URI(root.toString() + "/");
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        return root;
     }
 
     public NodeModuleImpl(String moduleName, URI path) {

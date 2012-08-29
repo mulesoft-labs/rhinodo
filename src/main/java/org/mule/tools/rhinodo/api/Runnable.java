@@ -4,5 +4,5 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.tools.shell.Global;
 
 public interface Runnable {
-    void run(Context ctx, Global global);
+    void executeJavascript(Context ctx, Global global);
 }

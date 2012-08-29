@@ -17,16 +17,7 @@ public class NodeRequire extends Require {
         this.asyncCallbacksQueue = asyncCallbacksQueue;
     }
 
-    @Override
-    public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-        if (!args[0].equals("fs")) {
-            return super.call(cx, scope, thisObj, args);
-        }
-
-        if ( fs != null ) {
-            return fs;
-        }
-
+    private Object importFs(Object[] args) {
         fs = new NativeObject();
 
         String id = (String)Context.jsToJava(args[0], String.class);
@@ -37,5 +28,14 @@ public class NodeRequire extends Require {
         }
 
         return fs;
+    }
+
+    @Override
+    public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+        if (!args[0].equals("fs")) {
+            return super.call(cx, scope, thisObj, args);
+        }
+
+        return importFs(args);
     }
 }

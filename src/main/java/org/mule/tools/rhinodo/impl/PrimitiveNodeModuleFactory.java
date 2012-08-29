@@ -5,14 +5,18 @@ import org.mule.tools.rhinodo.api.NodeModuleFactory;
 import org.mule.tools.rhinodo.tools.JarURIHelper;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 public class PrimitiveNodeModuleFactory implements NodeModuleFactory {
@@ -20,7 +24,7 @@ public class PrimitiveNodeModuleFactory implements NodeModuleFactory {
     private NodeModuleFactory nodeModuleFactory;
     private List<NodeModuleImpl> nodeModuleList;
 
-    public PrimitiveNodeModuleFactory(URI env, NodeModuleFactory nodeModuleFactory) {
+    public PrimitiveNodeModuleFactory(URI env, NodeModuleFactory nodeModuleFactory, String destDir) {
         this.nodeModuleFactory = nodeModuleFactory;
         this.nodeModuleList = new ArrayList<NodeModuleImpl>();
 
@@ -29,10 +33,14 @@ public class PrimitiveNodeModuleFactory implements NodeModuleFactory {
         }
 
         if ("file".equals(env.getScheme())) {
-
             addFileModules(env);
         } else if ("jar".equals(env.getScheme())) {
-            addJarModules(env);
+            try {
+                new JarURIHelper(env).copyToFolder(destDir);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            addFileModules(new File(destDir, "META-INF/env").toURI());
 
         } else {
             throw new IllegalArgumentException(String.format("Error creating PrimitiveNodeModuleFactory: " +
@@ -55,6 +63,8 @@ public class PrimitiveNodeModuleFactory implements NodeModuleFactory {
             }
         }
     }
+
+
 
     private void addJarModules(URI env) {
         JarURIHelper jarHelper = new JarURIHelper(env);

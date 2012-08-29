@@ -1,17 +1,17 @@
 package org.mule.tools.rhinodo.rhino;
 
-import org.mule.tools.rhinodo.api.NodeModule;
-import org.mule.tools.rhinodo.api.NodeModuleFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.commonjs.module.Require;
 import org.mozilla.javascript.commonjs.module.RequireBuilder;
 import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider;
 import org.mozilla.javascript.tools.shell.Global;
+import org.mule.tools.rhinodo.api.NodeModule;
+import org.mule.tools.rhinodo.api.NodeModuleFactory;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +23,7 @@ public class NodeJsGlobal extends Global {
 
     public Require installNodeJsRequire(Context cx, NodeModuleFactory nodeModuleFactory, RequireBuilder rb, boolean sandboxed) {
         rb.setSandboxed(sandboxed);
-        Map<String, URI> uris = new HashMap<String, URI>();
+        Map<String, URI> uris = new LinkedHashMap<String, java.net.URI>();
         if (nodeModuleFactory != null) {
             for (NodeModule nodeModule : nodeModuleFactory.getModules()) {
                 try {

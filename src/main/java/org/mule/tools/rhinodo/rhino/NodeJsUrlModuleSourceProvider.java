@@ -27,6 +27,26 @@ public class NodeJsUrlModuleSourceProvider extends UrlModuleSourceProvider {
         return loadFromPathMap(moduleId, validator, privilegedUris);
     }
 
+    @Override
+    protected ModuleSource loadFromUri(URI uri, URI base, Object validator) throws IOException, URISyntaxException {
+        String s = uri.toString();
+
+        if(s.lastIndexOf("/") == s.length() - 1) {
+            s = s.substring(0,s.lastIndexOf("/", s.length() - 1));
+        }
+
+        if (! s.startsWith(base.toString()) && !s.startsWith("./")) {
+            if ( s.lastIndexOf("/") != -1) {
+                base = new URI(s.substring(0, s.lastIndexOf("/")));
+            }
+        } else if ( uri.toString().startsWith("./") ) {
+            uri = URI.create(base.toString() + uri.toString().substring(2));
+            System.out.println("relative uri:" + uri.toString());
+        }
+
+        return super.loadFromUri(uri, base, validator);
+    }
+
     private ModuleSource loadFromPathMap(String moduleId,
                                          Object validator, Map<String, URI> paths)
             throws IOException, URISyntaxException

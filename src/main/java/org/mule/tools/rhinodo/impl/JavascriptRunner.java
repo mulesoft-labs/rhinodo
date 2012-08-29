@@ -22,9 +22,9 @@ public class JavascriptRunner {
 
 
     public JavascriptRunner(NodeModuleFactoryImpl nodeModuleFactory,
-                            Runnable runnable) {
+                            Runnable runnable, String destDir) {
         env = getURIFromResources(this.getClass(),"META-INF/env");
-        this.nodeModuleFactory = new PrimitiveNodeModuleFactory(env, nodeModuleFactory);
+        this.nodeModuleFactory = new PrimitiveNodeModuleFactory(env, nodeModuleFactory, destDir);
         this.runnable = runnable;
     }
 
@@ -67,7 +67,7 @@ public class JavascriptRunner {
             process.put("env",  process, new NativeObject());
             global.put("process", global, process);
 
-            runnable.run(ctx, global);
+            runnable.executeJavascript(ctx, global);
 
             Function asyncToExecute;
             while ( (asyncToExecute = asyncFunctionQueue.poll()) != null ) {

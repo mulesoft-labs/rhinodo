@@ -1,14 +1,15 @@
 package org.mule.tools.rhinodo.tools;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 public class JarURIHelper {
@@ -80,4 +81,34 @@ public class JarURIHelper {
         return entryList;
     }
 
+
+    public void copyToFolder( String destDir) throws IOException {
+        JarFile jar = null;
+        jar = new JarFile(jarURL.getFile());
+        Enumeration e = jar.entries();
+        while (e.hasMoreElements()) {
+            JarEntry file = (JarEntry) e.nextElement();
+            File f = new File(destDir + File.separator + file.getName());
+            if (file.isDirectory()) { // if its a directory, create it
+                f.mkdir();
+                continue;
+            }
+            if ( f.exists() ) {
+                continue;
+            }
+            InputStream is = null; // get the input stream
+            try {
+                is = jar.getInputStream(file);
+            } catch (IOException e1) {
+                throw new RuntimeException(e1);
+            }
+            FileOutputStream fos = new FileOutputStream(f);
+            while (is.available() > 0) {  // write contents of 'is' to 'fos'
+                fos.write(is.read());
+            }
+            fos.close();
+            is.close();
+        }
+
+    }
 }
