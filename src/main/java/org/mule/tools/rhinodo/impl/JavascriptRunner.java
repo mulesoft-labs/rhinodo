@@ -1,6 +1,10 @@
 package org.mule.tools.rhinodo.impl;
 
-import org.mozilla.javascript.*;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.NativeObject;
+import org.mozilla.javascript.Scriptable;
+import org.mule.tools.rhinodo.api.ConsoleFactory;
 import org.mule.tools.rhinodo.api.NodeModuleFactory;
 import org.mule.tools.rhinodo.api.Runnable;
 import org.mule.tools.rhinodo.rhino.NodeJsGlobal;
@@ -10,7 +14,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 
 public class JavascriptRunner {
@@ -19,13 +22,30 @@ public class JavascriptRunner {
     private NodeModuleFactory nodeModuleFactory;
     private org.mule.tools.rhinodo.api.Runnable runnable;
     private final Queue<Function> asyncFunctionQueue = new LinkedList<Function>();
+    private ConsoleFactory consoleFactory;
 
+    public Scriptable getConsole() {
+        return console;
+    }
+
+    private Scriptable console;
+
+    public static JavascriptRunner withConsoleFactory(ConsoleFactory consoleFactory,
+                                                      NodeModuleFactoryImpl nodeModuleFactory,
+                                                      Runnable runnable,
+                                                      String destDir) {
+        JavascriptRunner javascriptRunner = new JavascriptRunner(nodeModuleFactory, runnable, destDir);
+        javascriptRunner.consoleFactory = consoleFactory;
+        return javascriptRunner;
+    }
 
     public JavascriptRunner(NodeModuleFactoryImpl nodeModuleFactory,
-                            Runnable runnable, String destDir) {
+                            Runnable runnable,
+                            String destDir) {
         env = getURIFromResources(this.getClass(),"META-INF/env");
         this.nodeModuleFactory = new PrimitiveNodeModuleFactory(env, nodeModuleFactory, destDir);
         this.runnable = runnable;
+        this.consoleFactory = new WrappingConsoleFactory(new SystemOutConsole());
     }
 
     public void run()  {
@@ -40,27 +60,7 @@ public class JavascriptRunner {
         try {
             global.installNodeJsRequire(ctx, nodeModuleFactory, new NodeRequireBuilder(asyncFunctionQueue), false);
 
-            NativeObject console = new NativeObject();
-            console.put("log", console, new BaseFunction() {
-                @Override
-                public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                    if(args.length > 0) {
-                        System.out.println(args[0]);
-                        if( args[0] instanceof NativeObject) {
-                            NativeObject args0AsNativeObject = (NativeObject) args[0];
-                            for (Map.Entry<Object, Object> objectObjectEntry : args0AsNativeObject.entrySet()) {
-                                System.out.println(objectObjectEntry.getKey() + " -> " + objectObjectEntry.getValue());
-                            }
-                        } else {
-                            System.out.println(Context.toString(args[0]));
-                        }
-                    } else {
-                        System.out.println(Context.toString(Undefined.instance));
-                    }
-                    return Undefined.instance;
-                }
-            });
-            global.put("console", global, console);
+            addConsole(global);
 
             NativeObject process = new NativeObject();
             process.put("platform", process, Context.toString("darwin"));
@@ -77,6 +77,11 @@ public class JavascriptRunner {
         } finally {
             Context.exit();
         }
+    }
+
+    private void addConsole(NodeJsGlobal global) {
+        this.console = consoleFactory.getConsoleAsScriptable();
+        global.put("console", global, this.console);
     }
 
     public static URI getURIFromResources(Class<?> klass, String path) {
