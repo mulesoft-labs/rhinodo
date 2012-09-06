@@ -5,6 +5,7 @@ import org.mozilla.javascript.commonjs.module.ModuleScriptProvider;
 import org.mozilla.javascript.commonjs.module.Require;
 import org.mule.tools.rhinodo.node.fs.ReadFile;
 import org.mule.tools.rhinodo.node.fs.ReaddirSync;
+import org.mule.tools.rhinodo.node.fs.StatSync;
 
 import java.util.Queue;
 
@@ -25,6 +26,7 @@ public class NodeRequire extends Require {
         if ( id.equals("fs") ) {
             fs.put("readFile", fs, new ReadFile(asyncCallbacksQueue));
             fs.put("readdirSync", fs, new ReaddirSync());
+            fs.put("statSync", fs, new StatSync());
         }
 
         return fs;

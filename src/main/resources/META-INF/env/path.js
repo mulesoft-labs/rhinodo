@@ -21,5 +21,15 @@
         return new File(file).getParent();
     };
 
+    exports.basename = function(p, ext) {
+        if ( ext !== undefined ) {
+            throw "Not implemented!";
+        }
+
+        var path =(new File(p)).getPath();
+        var i = path.lastIndexOf(File.separator);
+        return path.substr(i+1);
+    }
+
 
 }());

@@ -2,7 +2,6 @@ package org.mule.tools.rhinodo.node.fs;
 
 import org.apache.commons.io.IOUtils;
 import org.mozilla.javascript.*;
-import org.mule.tools.rhinodo.impl.JavascriptRunner;
 
 import java.io.File;
 import java.io.FileInputStream;
