@@ -12,7 +12,7 @@ import org.mozilla.javascript.BaseFunction;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.WrappedException;
-import sun.org.mozilla.javascript.internal.Undefined;
+import org.mozilla.javascript.Undefined;
 
 import java.io.File;
 
