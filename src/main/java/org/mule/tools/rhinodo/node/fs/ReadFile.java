@@ -22,8 +22,8 @@ public class ReadFile extends BaseFunction {
             throw new RuntimeException("Only readFile with 3 parameters supported");
         }
 
-        String file = (String) args[0];
-        String encoding = (String) args[1];
+        final String file = Context.toString(args[0]);
+        String encoding = Context.toString(args[1]);
         final Function callback = (Function) args[2];
 
         List<String> lines = null;
