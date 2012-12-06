@@ -96,6 +96,11 @@ public class JarURIHelper {
         Enumeration e = jar.entries();
         while (e.hasMoreElements()) {
             JarEntry file = (JarEntry) e.nextElement();
+
+            if (!file.toString().startsWith(insideJarRelativePath) ) {
+                continue;
+            }
+
             File f = new File(destDir + File.separator + file.getName());
             if (file.isDirectory()) { // if its a directory, create it
                 f.mkdir();

@@ -15,9 +15,11 @@ import org.mozilla.javascript.Scriptable;
 import org.mule.tools.rhinodo.api.ConsoleFactory;
 import org.mule.tools.rhinodo.api.NodeModuleFactory;
 import org.mule.tools.rhinodo.api.Runnable;
+import org.mule.tools.rhinodo.main.Main;
 import org.mule.tools.rhinodo.rhino.NodeJsGlobal;
 import org.mule.tools.rhinodo.rhino.NodeRequireBuilder;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -45,6 +47,18 @@ public class JavascriptRunner {
         JavascriptRunner javascriptRunner = new JavascriptRunner(nodeModuleFactory, runnable, destDir);
         javascriptRunner.consoleFactory = consoleFactory;
         return javascriptRunner;
+    }
+
+    public JavascriptRunner(Runnable mainClass, File file) {
+        this(mainClass, file.toString());
+    }
+
+    public JavascriptRunner(Runnable runnable,
+                            String destDir) {
+        env = getURIFromResources(this.getClass(),"META-INF/env");
+        this.nodeModuleFactory = new PrimitiveNodeModuleFactory(env, new EmptyNodeModuleFactoryImpl(), destDir);
+        this.runnable = runnable;
+        this.consoleFactory = new WrappingConsoleFactory(new SystemOutConsole());
     }
 
     public JavascriptRunner(NodeModuleFactoryImpl nodeModuleFactory,
