@@ -8,7 +8,7 @@ A Node.js compatibility layer on top of Rhino (BETA).
 
 # Useful info
 
-## What native modules are (partially) supported?
+## Which native modules are (partially) supported?
 Currently, the modules are created on demand. Some of the methods in `fs` had been implemented.
 
 ## How Node.js threading model has been implemented?
