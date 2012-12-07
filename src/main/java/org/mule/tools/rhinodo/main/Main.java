@@ -24,14 +24,28 @@ public class Main implements org.mule.tools.rhinodo.api.Runnable {
     public static final String PROMPT = "> ";
     private Context ctx;
     private static boolean debug = true;
+    private InputStream in;
 
-    public static void main(String [] args) {
+    public Main(InputStream in) {
+        this.in = in;
+    }
+
+    public static void main(String [] args) throws FileNotFoundException {
         if (debug) {
             System.out.println("Called with " + Arrays.toString(args));
         }
+
+        InputStream in;
+        /* Read from a file */
+        if (args.length > 0 && !"".equals(args[0].trim())) {
+            in = new FileInputStream(args[0]);
+        } else {
+            in = System.in;
+        }
+
         JavascriptRunner javascriptRunner;
         String userHome = System.getProperty("user.home");
-        Main main = new Main();
+        Main main = new Main(in);
         javascriptRunner = new JavascriptRunner(main, new File(new File(userHome), ".rhinodo"));
         javascriptRunner.run();
     }
@@ -41,6 +55,7 @@ public class Main implements org.mule.tools.rhinodo.api.Runnable {
         this.ctx = ctx;
         ToolErrorReporter toolErrorReporter = new ToolErrorReporter(true);
         ctx.setErrorReporter(toolErrorReporter);
+        global.setIn(in);
 
         int exitCode;
         Scriptable scope = global;
@@ -48,7 +63,7 @@ public class Main implements org.mule.tools.rhinodo.api.Runnable {
         BufferedReader in;
         try
         {
-            in = new BufferedReader(new InputStreamReader(System.in,
+            in = new BufferedReader(new InputStreamReader(global.getIn(),
                     "UTF-8"));
         }
         catch(UnsupportedEncodingException e)
@@ -78,14 +93,22 @@ public class Main implements org.mule.tools.rhinodo.api.Runnable {
                     break;
                 }
                 source = source + newline + "\n";
+                if (lineno == 1 && newline.startsWith("#!")) {
+                    source = "//" + newline + "\n";
+                }
                 lineno++;
                 if (ctx.stringIsCompilableUnit(source))
                     break;
+
+
                 ps.print(PROMPT);
             }
             if (!hitEOF) {
+                if (debug) {
+                    System.out.println("Source to compile: [" + source.trim() + "]");
+                }
                 try {
-                    Script script = ctx.compileString(source, "<stdin>", lineno, null);
+                    Script script = ctx.compileString(source, "<stdin>", lineno - 1, null);
                     if (script != null) {
                         Object result = script.exec(ctx, scope);
                         try {
