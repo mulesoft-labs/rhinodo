@@ -8,14 +8,9 @@
 
 package org.mule.tools.rhinodo.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
 import org.mule.tools.rhinodo.api.NodeModule;
-import org.mule.tools.rhinodo.tools.JarURIHelper;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -25,111 +20,43 @@ public class NodeModuleImpl implements NodeModule {
     private URI path;
     private String name;
 
-    public static NodeModuleImpl fromJar(Class<?> klass, String rootDirectory, String destDir) {
-        if ( rootDirectory == null ) {
-            throw new IllegalArgumentException("Error validating rootDirectory");
-        }
-
-        if ( destDir == null ) {
-            throw new IllegalArgumentException("Error validating destDir");
-        }
-
-        URI root = getRoot(klass, rootDirectory);
-
-        if ( !"jar".equals(root.getScheme())) {
-            throw new IllegalArgumentException("URI must have jar scheme");
-        }
-
-        JarURIHelper jarURIHelper;
-
-        new File(destDir).mkdirs();
-
-        try {
-            jarURIHelper = new JarURIHelper(root);
-            jarURIHelper.copyToFolder(destDir);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return new NodeModuleImpl(klass, destDir + File.separator + jarURIHelper.getInsideJarRelativePath());
+    public static NodeModuleImpl create(String moduleName, URI path) {
+        return new NodeModuleImpl(moduleName, path);
     }
 
-
-    private NodeModuleImpl(Class<?> klass, String rootDirectory) {
-        if ( rootDirectory == null ) {
-            throw new IllegalArgumentException("Error validating rootDirectory");
+    public static NodeModuleImpl create(URI root, Map<String, String> map) {
+        //TODO Add validations
+        String main = map.get("main");
+        if (main.startsWith("./")) {
+            main = main.substring(2);
         }
 
-//        URI root = getRoot(klass, rootDirectory);
-        URI root = new File(rootDirectory + "/").toURI();
+        String pathToReorder = root.getPath() + main;
 
-        URI packageJson;
-        try {
-            packageJson = new URI(root.toString() + "package.json");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        File path = null;
 
-        boolean exists;
-        if ("file".equals(packageJson.getScheme())) {
-            exists = new File(packageJson).exists();
-        } else if ("jar".equals(packageJson.getScheme())) {
-            throw new RuntimeException("jar scheme not supported");
-//            exists = new JarURIHelper(packageJson).exists();
+        path = cleanUpPathToModule(map.get("name"), pathToReorder);
+
+        return new NodeModuleImpl(map.get("name"), path.toURI());
+    }
+
+    public static File cleanUpPathToModule(String name, String pathToReorder) {
+        File path;
+        File file = new File(pathToReorder);
+        if( file.exists() && file.isDirectory() ) {
+                path = new File(file, "index.js");
+        } else if ( file.exists() && file.isFile() ) {
+            path = file;
         } else {
-            throw new IllegalStateException(String.format("Error: scheme [%s] not supported.",packageJson.getScheme()) );
+            path = new File(file.getAbsolutePath() + ".js");
+            if( !path.exists() ) {
+                throw new RuntimeException("Module " + name + " not found");
+            }
         }
-
-        if( !exists ) {
-            throw new IllegalStateException(String.format("Error: package.json not found at [%s].", packageJson));
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String,String> map;
-        try {
-            InputStream inputStream = packageJson.toURL().openStream();
-            map = objectMapper.readValue(inputStream, Map.class);
-            IOUtils.closeQuietly(inputStream);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Error: trying to parse package.json.");
-        }
-
-        String main1 = map.get("main");
-        if (main1.startsWith("./")) {
-            main1 = main1.substring(2);
-        }
-
-        try {
-            this.path = new URI(root.toString() + main1);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        this.name = map.get("name");
+        return path;
     }
 
-    private static URI getRoot(Class<?> klass, String rootDirectory) {
-        ClassLoader classLoader = klass.getClassLoader();
-        URI root;
-        try {
-            root = classLoader.getResource(rootDirectory).toURI();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-
-        if ( root == null ) {
-            throw new IllegalStateException("Error: path not found.");
-        }
-
-        try {
-            root = new URI(root.toString() + "/");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-
-        return root;
-    }
-
-    public NodeModuleImpl(String moduleName, URI path) {
+    private NodeModuleImpl(String moduleName, URI path) {
         this.name = moduleName;
         this.path = path;
     }

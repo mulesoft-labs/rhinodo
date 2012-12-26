@@ -18,17 +18,24 @@ import java.util.List;
 
 public class NodeModuleFactoryImpl implements NodeModuleFactory {
 
-    private List<NodeModule> nodeModules;
+    private List<NodeModule> nodeModules = new ArrayList<NodeModule>();
 
-    private NodeModuleFactoryImpl() {}
+    public NodeModuleFactoryImpl() {}
+
+    public NodeModuleFactoryImpl(Class<?> klass, String destDir, String... nodeModulesNames) {
+        String prefix = "META-INF/node_modules";
+
+        for (String nodeModuleName : nodeModulesNames) {
+            nodeModules.add(NodeModuleImplBuilder.fromJarOrFile(klass, prefix + "/" + nodeModuleName, destDir));
+        }
+
+    }
 
     public <T extends NodeModule> NodeModuleFactoryImpl(T... nodeModules) {
-        this.nodeModules = new ArrayList<NodeModule>();
         Collections.addAll(this.nodeModules, nodeModules);
     }
 
     public NodeModuleFactoryImpl(List<? extends NodeModule> nodeModules) {
-        this.nodeModules = new ArrayList<NodeModule>();
         this.nodeModules.addAll(nodeModules);
     }
 

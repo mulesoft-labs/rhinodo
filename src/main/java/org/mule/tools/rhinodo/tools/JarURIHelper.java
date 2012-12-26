@@ -89,9 +89,8 @@ public class JarURIHelper {
         return entryList;
     }
 
-
-    public void copyToFolder( String destDir) throws IOException {
-        JarFile jar = null;
+    public void copyToFolder( File destDir, boolean override) throws IOException {
+        JarFile jar;
         jar = new JarFile(jarURL.getFile());
         Enumeration e = jar.entries();
         while (e.hasMoreElements()) {
@@ -101,12 +100,12 @@ public class JarURIHelper {
                 continue;
             }
 
-            File f = new File(destDir + File.separator + file.getName());
+            File f = new File(destDir, file.getName());
             if (file.isDirectory()) { // if its a directory, create it
-                f.mkdir();
+                f.mkdirs();
                 continue;
             }
-            if ( f.exists() ) {
+            if ( f.exists() && !override ) {
                 continue;
             }
             InputStream is = null; // get the input stream
@@ -123,5 +122,9 @@ public class JarURIHelper {
             is.close();
         }
 
+    }
+
+    public void copyToFolder(File destDir) throws IOException {
+        copyToFolder(destDir, false);
     }
 }

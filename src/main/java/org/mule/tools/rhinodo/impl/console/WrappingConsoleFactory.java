@@ -6,7 +6,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.tools.rhinodo.impl;
+package org.mule.tools.rhinodo.impl.console;
 
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
@@ -19,19 +19,19 @@ import java.util.Map;
 
 public class WrappingConsoleFactory implements ConsoleFactory {
     private Console console;
-    Map<String, LogFunctionWrapper> functionWrapperMap = new HashMap<String, LogFunctionWrapper>();
 
     public WrappingConsoleFactory(Console console) {
         this.console = console;
-
-        for (Method method : Console.class.getDeclaredMethods()) {
-            functionWrapperMap.put(method.getName(), LogFunctionWrapper.fromMethodWithDebugging(console, method));
-        }
     }
 
     @Override
-    public Scriptable getConsoleAsScriptable() {
+    public Scriptable getConsoleAsScriptable(Scriptable scope) {
         NativeObject consoleNativeObject = new NativeObject();
+        Map<String, LogFunctionWrapper> functionWrapperMap = new HashMap<String, LogFunctionWrapper>();
+
+        for (Method method : Console.class.getDeclaredMethods()) {
+            functionWrapperMap.put(method.getName(), LogFunctionWrapper.fromMethodWithDebugging(console, method, scope));
+        }
 
         for (Map.Entry<String, LogFunctionWrapper> stringFunctionWrapperEntry : functionWrapperMap.entrySet()) {
             consoleNativeObject.put(stringFunctionWrapperEntry.getKey(), consoleNativeObject, stringFunctionWrapperEntry.getValue());

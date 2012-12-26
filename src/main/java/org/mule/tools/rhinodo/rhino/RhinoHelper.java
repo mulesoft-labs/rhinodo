@@ -15,10 +15,11 @@ import java.util.Map;
 
 public class RhinoHelper {
 
-    public  NativeObject mapToNativeObject(Map<String,Object> config) {
+    public <T, U>  NativeObject mapToNativeObject(Map<T,U> config) {
         NativeObject nobj = new NativeObject();
-        for (Map.Entry<String, Object> entry : config.entrySet()) {
-            nobj.defineProperty(entry.getKey(), Context.javaToJS(entry.getValue(), nobj), NativeObject.READONLY);
+        for (Map.Entry<T, U> entry : config.entrySet()) {
+            nobj.defineProperty((String) entry.getKey(),
+                    Context.javaToJS(entry.getValue(), nobj), NativeObject.READONLY);
         }
         return nobj;
     }

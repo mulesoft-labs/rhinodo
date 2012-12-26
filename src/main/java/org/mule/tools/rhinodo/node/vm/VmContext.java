@@ -6,10 +6,18 @@
  * LICENSE.txt file.
  */
 
-package org.mule.tools.rhinodo.api;
+package org.mule.tools.rhinodo.node.vm;
 
 import org.mozilla.javascript.Scriptable;
 
-public interface ConsoleFactory {
-    Scriptable getConsoleAsScriptable(Scriptable scope);
+public class VmContext {
+    private final Scriptable initialContents;
+
+    public VmContext(Scriptable initialContents) {
+        this.initialContents = initialContents;
+    }
+
+    public Scriptable getInitialContents() {
+        return initialContents;
+    }
 }

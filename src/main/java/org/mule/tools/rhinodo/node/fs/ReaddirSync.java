@@ -16,7 +16,6 @@ import org.mule.tools.rhinodo.tools.JarURIHelper;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -30,12 +29,7 @@ public class ReaddirSync extends BaseFunction {
 
         String dir = args[0].toString();
 
-        URI uri;
-        try {
-            uri = new URI(dir);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        URI uri = new File(dir).toURI();
 
         String [] lst;
 

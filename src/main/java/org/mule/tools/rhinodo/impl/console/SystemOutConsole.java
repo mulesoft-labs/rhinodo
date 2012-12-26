@@ -6,7 +6,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.tools.rhinodo.impl;
+package org.mule.tools.rhinodo.impl.console;
 
 
 import org.mule.tools.rhinodo.api.Console;

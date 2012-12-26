@@ -6,13 +6,12 @@
  * LICENSE.txt file.
  */
 
-package org.mule.tools.rhinodo.impl;
+package org.mule.tools.rhinodo.api;
 
-import org.junit.Test;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
-public class JavascriptRunnerTest {
-
-    @Test
-    public void testUsingRequireSystem() throws Exception {
-    }
+public interface NativeModule {
+    String getId();
+    Scriptable getModule(Context context, Scriptable scope);
 }

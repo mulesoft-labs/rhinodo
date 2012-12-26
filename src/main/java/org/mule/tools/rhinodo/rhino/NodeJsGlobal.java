@@ -10,7 +10,6 @@ package org.mule.tools.rhinodo.rhino;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.commonjs.module.Require;
-import org.mozilla.javascript.commonjs.module.RequireBuilder;
 import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider;
 import org.mozilla.javascript.tools.shell.Global;
 import org.mule.tools.rhinodo.api.NodeModule;
@@ -29,7 +28,8 @@ public class NodeJsGlobal extends Global {
         return super.installRequire(cx, modulePath, sandboxed);
     }
 
-    public Require installNodeJsRequire(Context cx, NodeModuleFactory nodeModuleFactory, RequireBuilder rb, boolean sandboxed) {
+    public Require installNodeJsRequire(Context cx, NodeModuleFactory nodeModuleFactory,
+                                        NodeRequireBuilder rb, boolean sandboxed) {
         rb.setSandboxed(sandboxed);
         Map<String, URI> uris = new LinkedHashMap<String, java.net.URI>();
         if (nodeModuleFactory != null) {
@@ -51,10 +51,12 @@ public class NodeJsGlobal extends Global {
                 }
             }
         }
+        NodeJsUrlModuleSourceProvider moduleSourceProvider = new NodeJsUrlModuleSourceProvider(uris);
         rb.setModuleScriptProvider(
                 new SoftCachingModuleScriptProvider(
-                        new NodeJsUrlModuleSourceProvider(uris)));
-        Require require = rb.createRequire(cx, this);
+                        moduleSourceProvider));
+
+        Require require = rb.createRequire(cx, this, moduleSourceProvider);
         require.install(this);
         return require;
     }

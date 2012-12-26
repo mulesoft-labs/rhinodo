@@ -6,18 +6,15 @@
  * LICENSE.txt file.
  */
 
-package org.mule.tools.rhinodo.node.fs;
+package org.mule.tools.rhinodo.node.process;
 
-import org.mozilla.javascript.*;
+import org.mozilla.javascript.BaseFunction;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
-import java.io.File;
-
-public class StatSync extends BaseFunction {
+public class Cwd extends BaseFunction {
     @Override
     public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-        if ( !new File(Context.toString(args[0])).exists() ) {
-            throw new WrappedException(new RuntimeException(String.format("Error: file [%s] does not exist", args[0])));
-        }
-        return Undefined.instance;
+        return Context.javaToJS(System.getProperty("user.dir"), scope);
     }
 }

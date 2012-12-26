@@ -10,14 +10,18 @@ package org.mule.tools.rhinodo.node.fs;
 
 import org.mozilla.javascript.*;
 
-import java.io.File;
+import java.util.Queue;
 
-public class StatSync extends BaseFunction {
+public class UnWatchFile extends BaseFunction {
+    private Queue<Function> asyncCallbacksQueue;
+
+    public UnWatchFile(Queue<Function> asyncCallbacksQueue) {
+        this.asyncCallbacksQueue = asyncCallbacksQueue;
+    }
+
     @Override
-    public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-        if ( !new File(Context.toString(args[0])).exists() ) {
-            throw new WrappedException(new RuntimeException(String.format("Error: file [%s] does not exist", args[0])));
-        }
+    public Object call(final Context cx,final Scriptable scope, final Scriptable thisObj, Object[] args) {
+        //TODO Implement me
         return Undefined.instance;
     }
 }

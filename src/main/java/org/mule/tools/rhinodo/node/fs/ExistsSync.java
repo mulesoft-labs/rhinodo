@@ -8,16 +8,19 @@
 
 package org.mule.tools.rhinodo.node.fs;
 
-import org.mozilla.javascript.*;
+import org.mozilla.javascript.BaseFunction;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 
 import java.io.File;
 
-public class StatSync extends BaseFunction {
+public class ExistsSync extends BaseFunction {
     @Override
     public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-        if ( !new File(Context.toString(args[0])).exists() ) {
-            throw new WrappedException(new RuntimeException(String.format("Error: file [%s] does not exist", args[0])));
+        if ( args.length != 1) {
+            throw new RuntimeException("Only existsSync with 1 parameter supported");
         }
-        return Undefined.instance;
+
+        return Context.javaToJS(new File(args[0].toString()).exists(), scope);
     }
 }

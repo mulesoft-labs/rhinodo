@@ -24,21 +24,28 @@ public class ReadFile extends BaseFunction {
         this.asyncCallbacksQueue = asyncCallbacksQueue;
     }
 
-    @Override
-    public Object call(final Context cx,final Scriptable scope, final Scriptable thisObj, Object[] args) {
-        if ( args.length != 3) {
-            throw new RuntimeException("Only readFile with 3 parameters supported");
-        }
 
-        final String file = Context.toString(args[0]);
-        String encoding = Context.toString(args[1]);
-        final Function callback = (Function) args[2];
+
+
+    private Object readFile(final Context cx, final Scriptable scope, final Scriptable thisObj,
+                            String file, String encoding,final Function callback) {
 
         List<String> lines = null;
+
         try {
             lines = IOUtils.readLines(new FileInputStream(new File(file)), encoding);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            if (callback != null) {
+                asyncCallbacksQueue.add(new BaseFunction() {
+
+                    @Override
+                    public Object call(Context cx2, Scriptable scope2, Scriptable thisObj2, Object[] args2) {
+                        return callback.call(cx, scope, thisObj, new Object[] {true, Undefined.instance});
+                    }
+                });
+            }
+
+            return Undefined.instance;
         }
         final StringBuilder sb = new StringBuilder();
         int i = 0;
@@ -62,5 +69,24 @@ public class ReadFile extends BaseFunction {
         }
 
         return Undefined.instance;
+    }
+
+
+    @Override
+    public Object call(final Context cx,final Scriptable scope, final Scriptable thisObj, Object[] args) {
+        if (args.length == 2) {
+            final String file = Context.toString(args[0]);
+            final Function callback = (Function) args[1];
+
+            return readFile(cx,scope,thisObj,file,"UTF-8",callback);
+        } else if ( args.length == 3) {
+            final String file = Context.toString(args[0]);
+            String encoding = Context.toString(args[1]);
+            final Function callback = (Function) args[2];
+
+            return readFile(cx,scope,thisObj,file,encoding,callback);
+        } else {
+            throw new RuntimeException("Only readFile with 3 parameters supported");
+        }
     }
 }

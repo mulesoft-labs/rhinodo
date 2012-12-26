@@ -11,15 +11,13 @@ package org.mule.tools.rhinodo.main;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.tools.ToolErrorReporter;
 import org.mozilla.javascript.tools.shell.Global;
-import org.mule.tools.rhinodo.impl.JavascriptRunner;
-import org.mule.tools.rhinodo.impl.NodeModuleFactoryImpl;
+import org.mule.tools.rhinodo.impl.Rhinodo;
 
 import java.io.*;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Arrays;
-import java.util.List;
 
-public class Main implements org.mule.tools.rhinodo.api.Runnable {
+public class Main {
     private static final int EXITCODE_RUNTIME_ERROR = 1;
     public static final String PROMPT = "> ";
     private Context ctx;
@@ -30,7 +28,7 @@ public class Main implements org.mule.tools.rhinodo.api.Runnable {
         this.in = in;
     }
 
-    public static void main(String [] args) throws FileNotFoundException {
+    public void main(String[] args) throws FileNotFoundException {
         if (debug) {
             System.out.println("Called with " + Arrays.toString(args));
         }
@@ -43,18 +41,26 @@ public class Main implements org.mule.tools.rhinodo.api.Runnable {
             in = System.in;
         }
 
-        JavascriptRunner javascriptRunner;
+        Rhinodo rhinodo;
         String userHome = System.getProperty("user.home");
         Main main = new Main(in);
-        javascriptRunner = new JavascriptRunner(main, new File(new File(userHome), ".rhinodo"));
-        javascriptRunner.run();
+        Rhinodo.create(new BaseFunction(){
+            @Override
+            public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                Main.this.executeJavascript(cx,scope);
+                return Undefined.instance;
+            }
+        },
+                new File(new File(userHome), ".rhinodo")
+        );
     }
 
-    @Override
-    public void executeJavascript(Context ctx, Global global) {
+    public void executeJavascript(Context ctx, Scriptable globalWannaBe) {
         this.ctx = ctx;
         ToolErrorReporter toolErrorReporter = new ToolErrorReporter(true);
         ctx.setErrorReporter(toolErrorReporter);
+
+        Global global = (Global) globalWannaBe;
         global.setIn(in);
 
         int exitCode;
