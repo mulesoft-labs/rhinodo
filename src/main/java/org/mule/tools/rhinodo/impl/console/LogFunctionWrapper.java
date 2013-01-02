@@ -60,7 +60,7 @@ public class LogFunctionWrapper extends FunctionObject {
                     if ( arg instanceof NativeObject ) {
                         stringBuilder.append(convertObjectToString((NativeObject) arg));
                     } else {
-                        stringBuilder.append(arg);
+                        stringBuilder.append(Context.toString(arg));
                     }
                     stringBuilder.append(" ");
                 }
@@ -89,7 +89,9 @@ public class LogFunctionWrapper extends FunctionObject {
             sb.append(Context.toString(objectObjectEntry.getValue()));
             sb.append(",");
         }
-        sb.deleteCharAt(sb.length()-1);
+        if (sb.length() > 1) {
+            sb.deleteCharAt(sb.length()-1);
+        }
         sb.append("}");
 
         return sb.toString();
