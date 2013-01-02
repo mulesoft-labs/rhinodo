@@ -9,6 +9,8 @@
 package org.mule.tools.rhinodo.node.vm;
 
 import org.mozilla.javascript.*;
+import org.mozilla.javascript.tools.shell.Global;
+import org.mule.tools.rhinodo.rhino.NodeJsGlobal;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Queue;
@@ -22,8 +24,15 @@ public class CreateContext extends BaseFunction {
 
     @Override
     public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-        Scriptable initialContents = (Scriptable) args[0];
 
-        return new VmContext(initialContents);
+        ScriptableObject initialContents = (ScriptableObject) args[0];
+        NativeObject newGlobal = new NativeObject();
+
+        for (Object o : initialContents.getAllIds()) {
+            String s = (String) o;
+            ScriptableObject.putProperty(newGlobal, s, ScriptableObject.getProperty(initialContents, s));
+        }
+
+        return newGlobal;
     }
 }

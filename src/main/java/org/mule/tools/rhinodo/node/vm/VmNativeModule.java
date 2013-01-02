@@ -30,5 +30,6 @@ public class VmNativeModule extends AbstractNativeModule {
     protected void populateModule(Scriptable module, Queue<Function> asyncFunctionQueue) {
         ScriptableObject.putProperty(module, "createContext", new CreateContext(asyncFunctionQueue));
         ScriptableObject.putProperty(module, "runInContext", new RunInContext(asyncFunctionQueue));
+        ScriptableObject.putProperty(module, "runInNewContext", new RunInNewContext(asyncFunctionQueue));
     }
 }

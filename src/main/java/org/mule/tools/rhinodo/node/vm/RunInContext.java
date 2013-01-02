@@ -26,12 +26,13 @@ public class RunInContext extends BaseFunction {
             throw new IllegalArgumentException();
         }
 
-        String code = (String) args[0];
-        VmContext vmContext = (VmContext) args[1];
-        String scriptName = (String) (args[2] == null ? "_RunInConext_NoName" : args[2]);
+        String code = (String) Context.toString(args[0]);
+        Scriptable vmContext = (Scriptable) args[1];
+        String scriptName = (String) (args.length > 2 ? args[2] : "_RunInConext_NoName" );
 
-        Script script = cx.compileString(code, scriptName, 0, null);
-        System.out.println("Run: " + scriptName);
-        return script.exec(cx, vmContext.getInitialContents());
+        ScriptableObject.putProperty(vmContext, "window", vmContext);
+        vmContext.setParentScope(scope );
+
+        return cx.evaluateString(vmContext, code, scriptName, 0, null);
     }
 }
