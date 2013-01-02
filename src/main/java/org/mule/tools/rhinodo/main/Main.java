@@ -28,7 +28,7 @@ public class Main {
         this.in = in;
     }
 
-    public void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException {
         if (debug) {
             System.out.println("Called with " + Arrays.toString(args));
         }
@@ -41,18 +41,18 @@ public class Main {
             in = System.in;
         }
 
-        Rhinodo rhinodo;
         String userHome = System.getProperty("user.home");
-        Main main = new Main(in);
-        Rhinodo.create(new BaseFunction(){
-            @Override
-            public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                Main.this.executeJavascript(cx,scope);
-                return Undefined.instance;
-            }
-        },
-                new File(new File(userHome), ".rhinodo")
-        );
+        final Main main = new Main(in);
+        Rhinodo
+                .create()
+                .destDir(new File(new File(userHome), ".rhinodo"))
+                .build(new BaseFunction(){
+                    @Override
+                    public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                        main.executeJavascript(cx,scope);
+                        return Undefined.instance;
+                    }
+                });
     }
 
     public void executeJavascript(Context ctx, Scriptable globalWannaBe) {
