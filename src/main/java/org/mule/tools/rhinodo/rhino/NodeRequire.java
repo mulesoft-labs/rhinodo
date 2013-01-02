@@ -19,6 +19,10 @@ import org.mule.tools.rhinodo.impl.NodeModuleImplBuilder;
 import org.mule.tools.rhinodo.node.child_process.ChildProcessNativeModule;
 import org.mule.tools.rhinodo.node.fs.FsNativeModule;
 import org.mule.tools.rhinodo.node.process.ProcessNativeModule;
+import org.mule.tools.rhinodo.node.timer.ClearInterval;
+import org.mule.tools.rhinodo.node.timer.ClearTimeout;
+import org.mule.tools.rhinodo.node.timer.SetInterval;
+import org.mule.tools.rhinodo.node.timer.SetTimeout;
 import org.mule.tools.rhinodo.node.vm.VmNativeModule;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -116,33 +120,14 @@ public class NodeRequire extends Require {
         Scriptable process = nativeModuleMap.get("process");
         ScriptableObject.putProperty(globalScope, "process", process);
 
-        ScriptableObject.putProperty(globalScope, "setTimeout", new BaseFunction() {
 
-            @Override
-            public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
+        ScriptableObject.putProperty(globalScope, "clearTimeout", new ClearTimeout());
 
-                final Function callback = (Function) args[0];
-                final Long millisToWait = (Long) Context.jsToJava(args[1], Long.class);
-                final long startTime = System.currentTimeMillis();
+        ScriptableObject.putProperty(globalScope, "setTimeout", new SetTimeout(asyncCallbacksQueue));
 
-                if (callback != null) {
-                    final BaseFunction timerFunction = new BaseFunction() {
-                        @Override
-                        public Object call(Context cx2, Scriptable scope2, Scriptable thisObj2, Object[] args2) {
-                            if (System.currentTimeMillis() >= startTime + millisToWait) {
-                                return callback.call(cx, scope, thisObj, args);
-                            }
+        ScriptableObject.putProperty(globalScope, "clearInterval", new ClearInterval());
 
-                            asyncCallbacksQueue.add(this);
-                            return Undefined.instance;
-                        }
-                    };
-                    asyncCallbacksQueue.add(timerFunction);
-                }
-
-                return Undefined.instance;
-            }
-        });
+        ScriptableObject.putProperty(globalScope, "setInterval", new SetInterval(asyncCallbacksQueue));
 
         this.preExec = preExec;
         this.postExec = postExec;
