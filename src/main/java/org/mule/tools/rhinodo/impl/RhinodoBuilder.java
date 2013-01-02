@@ -24,8 +24,7 @@ public class RhinodoBuilder {
     private ConsoleFactory consoleFactory = new WrappingConsoleFactory(new SystemOutConsole());
     private NodeModuleFactory nodeModuleFactory = new NodeModuleFactoryImpl();
     private Context context;
-    private final File destDir;
-    private final Function callback;
+    private File destDir;
 
     private static URI getURIFromResources(Class<?> klass, String path) {
         ClassLoader classLoader = klass.getClassLoader();
@@ -42,12 +41,7 @@ public class RhinodoBuilder {
         }
     }
 
-    RhinodoBuilder(Function callback, File destDir) {
-        context = Context.enter();
-        context.setOptimizationLevel(9);
-        context.setLanguageVersion(Context.VERSION_1_8);
-        this.callback = callback;
-        this.destDir = destDir;
+    RhinodoBuilder() {
     }
 
     public RhinodoBuilder consoleFactory(ConsoleFactory consoleFactory) {
@@ -65,8 +59,21 @@ public class RhinodoBuilder {
         return this;
     }
 
+    public RhinodoBuilder destDir(File destDir)  {
+        this.destDir = destDir;
+        return this;
+    }
 
-    public Rhinodo build() {
+    public Rhinodo build(Function callback) {
+
+        if ( this.destDir == null ) {
+            String userHome = System.getProperty("user.home");
+            this.destDir = new File(userHome, ".rhinodo");
+        }
+
+        context = Context.enter();
+        context.setOptimizationLevel(9);
+        context.setLanguageVersion(Context.VERSION_1_8);
         this.nodeModuleFactory = new PrimitiveNodeModuleFactory(
                 JavascriptResource.copyFromJarAndCreate(getURIFromResources(this.getClass(),"META-INF/env"), destDir),
                 nodeModuleFactory);

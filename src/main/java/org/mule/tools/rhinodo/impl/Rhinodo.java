@@ -26,8 +26,8 @@ public class Rhinodo {
     private final Context ctx;
     private final Function callback;
 
-    public static RhinodoBuilder create(Function callback, File destDir) {
-        return new RhinodoBuilder(callback, destDir);
+    public static RhinodoBuilder create() {
+        return new RhinodoBuilder();
     }
 
     Rhinodo(ConsoleFactory consoleFactory, NodeModuleFactory nodeModuleFactory, Context context, Function callback) {
