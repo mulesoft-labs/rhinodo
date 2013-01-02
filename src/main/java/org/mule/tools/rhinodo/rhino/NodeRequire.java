@@ -51,9 +51,16 @@ public class NodeRequire extends Require {
 
             defineReadOnlyProperty(moduleObject, "id", args[0]);
 
+            String path = Context.toString(args[1]);
+            File file = new File(path);
+            URI uri = file.toURI();
+            URI base;
 
-            URI uri = new File(Context.toString(args[1])).toURI();
-            URI base = new File(Context.toString(args[1])).toURI();
+            if (file.exists() && file.isFile()) {
+                base = file.getParentFile().toURI();
+            } else {
+                base = file.toURI();
+            }
 
             final Scriptable executionScope = new ModuleScope(thisObj, uri, base);
 
@@ -65,7 +72,7 @@ public class NodeRequire extends Require {
             moduleObject.put("exports", moduleObject, exports);
             install(executionScope);
             executeOptionalScript(preExec, cx, executionScope);
-            cx.compileString(Context.toString(args[0]), Context.toString(args[1]), 0, null).exec(cx, executionScope);
+            cx.compileString(Context.toString(args[0]), path, 0, null).exec(cx, executionScope);
             executeOptionalScript(postExec, cx, executionScope);
             return ScriptRuntime.toObject(scope,
                     ScriptableObject.getProperty(moduleObject, "exports"));
@@ -176,7 +183,31 @@ public class NodeRequire extends Require {
         }
     }
 
-    public Map.Entry<String, Function> tryExtensions(String id, ModuleScope thisObj) {
+    public static class TryExtensionsResult {
+        private final String extensionAsString;
+        private final Function callback;
+        private final File file;
+
+        public TryExtensionsResult(String extensionAsString, Function value, File file) {
+            this.extensionAsString = extensionAsString;
+            this.callback = value;
+            this.file = file;
+        }
+
+        public String getExtensionAsString() {
+            return extensionAsString;
+        }
+
+        public Function getCallback() {
+            return callback;
+        }
+
+        public File getFile() {
+            return file;
+        }
+    }
+
+    public TryExtensionsResult tryExtensions(String id, ModuleScope thisObj) {
         File cwdFile = getBasePathForModule(thisObj);
         NativeObject extensions = ScriptableObject.getTypedProperty(this, "extensions", NativeObject.class);
         Object[] propertyIds = ScriptableObject.getPropertyIds(extensions);
@@ -184,7 +215,6 @@ public class NodeRequire extends Require {
         if (!(id.startsWith("./") || id.startsWith("../") || id.startsWith("/"))) {
             return null;
         }
-
 
         for (Object extension : propertyIds) {
             String extensionAsString = (String) extension;
@@ -198,7 +228,7 @@ public class NodeRequire extends Require {
             if ( file.exists() ) {
                 Function value = ScriptableObject.getTypedProperty(extensions, extensionAsString,
                         Function.class);
-                return new HashMap.SimpleImmutableEntry<String, Function>(extensionAsString, value);
+                return new TryExtensionsResult(extensionAsString, value, file);
             }
         }
 
@@ -220,14 +250,17 @@ public class NodeRequire extends Require {
         File file = new File(id);
         File packageJson = new File(id, "package.json");
         /* Case when a path like a/b/c is required and a file a/b/c.js exists */
-        Map.Entry<String, Function> tuple;
+        TryExtensionsResult extensionsResult;
 
         /* Absolute path */
-        if (id.startsWith("/") && (tuple = tryExtensions(id, null)) != null) {
-            return tuple.getValue().call(cx, scope, thisObj, new Object[]{thisObj, id + tuple.getKey()});
+        if (id.startsWith("/") && (extensionsResult = tryExtensions(id, null)) != null) {
+            return extensionsResult.getCallback().call(cx, scope, thisObj, new Object[]{thisObj,
+                    extensionsResult.getFile().getAbsolutePath()});
         /* Relative Path */
-        } else if ( thisObj instanceof ModuleScope && (tuple = tryExtensions(id, (ModuleScope)thisObj)) != null ) {
-            return tuple.getValue().call(cx, scope, thisObj, new Object[]{thisObj, id + tuple.getKey()});
+        } else if ( thisObj instanceof ModuleScope &&
+                (extensionsResult = tryExtensions(id, (ModuleScope)thisObj)) != null ) {
+            return extensionsResult.getCallback().call(cx, scope, thisObj,
+                    new Object[]{thisObj, extensionsResult.getFile().getAbsolutePath()});
         } else if (  file.exists() && !file.isDirectory() &&
                 ScriptableObject.hasProperty(extensions, "." + FilenameUtils.getExtension(id) ) ) {
             return ScriptableObject.getTypedProperty(extensions,  "." + FilenameUtils.getExtension( id),
@@ -236,9 +269,12 @@ public class NodeRequire extends Require {
         } else if ( file.isDirectory() && packageJson.exists() && packageJson.isFile() ) {
             Map<String,String> map = NodeModuleImplBuilder.getPackageJSONMap(packageJson);
 
-            /* Fetch entry point */
-            File mainFile = new File(FilenameUtils.concat(file.getPath(), map.get("main")));
-            return callSuperWrapped(cx, scope, thisObj, new Object[]{mainFile.getAbsolutePath()});
+            String main;
+            if ( map != null && (main = map.get("main")) != null ) {
+                /* Fetch entry point */
+                File mainFile = new File(FilenameUtils.concat(file.getPath(), main));
+                return callSuperWrapped(cx, scope, thisObj, new Object[]{mainFile.getAbsolutePath()});
+            }
         } else if (thisObj instanceof ModuleScope) {
             File cwdFile = getBasePathForModule((ModuleScope) thisObj);
             cwdFile = getModuleRootDirectory(cwdFile);
