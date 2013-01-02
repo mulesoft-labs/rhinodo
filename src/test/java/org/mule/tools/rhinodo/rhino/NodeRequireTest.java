@@ -11,7 +11,6 @@ package org.mule.tools.rhinodo.rhino;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -27,14 +26,12 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Queue;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 public class NodeRequireTest {
@@ -356,13 +353,13 @@ public class NodeRequireTest {
                 ModuleScope moduleScope = mock(ModuleScope.class);
                 when(moduleScope.getUri()).thenReturn(file.getParentFile().toURI());
                 when(moduleScope.getBase()).thenReturn(file.getParentFile().toURI());
-                Map.Entry<String, Function> extensionFound =
+                NodeRequire.TryExtensionsResult extensionFound =
                         nodeRequire.tryExtensions(FilenameUtils.concat(file.getParent(),
                                 FilenameUtils.getBaseName(file.getAbsolutePath())), moduleScope);
 
                 assertNotNull(extensionFound);
-                assertEquals(".pose", extensionFound.getKey());
-                assertSame(myExtensionCallback, extensionFound.getValue());
+                assertEquals(".pose", extensionFound.getExtensionAsString());
+                assertSame(myExtensionCallback, extensionFound.getCallback());
 
                 return null;
             }
