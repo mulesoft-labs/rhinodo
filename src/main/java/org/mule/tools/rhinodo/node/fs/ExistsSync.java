@@ -21,6 +21,6 @@ public class ExistsSync extends BaseFunction {
             throw new RuntimeException("Only existsSync with 1 parameter supported");
         }
 
-        return Context.javaToJS(new File(args[0].toString()).exists(), scope);
+        return Context.javaToJS(new File(Context.toString(args[0])).getAbsoluteFile().exists(), scope);
     }
 }

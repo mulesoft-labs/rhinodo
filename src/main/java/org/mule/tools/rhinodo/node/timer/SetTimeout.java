@@ -46,6 +46,6 @@ public class SetTimeout extends BaseFunction {
             asyncCallbacksQueue.add(timerFunction);
         }
 
-        return timer;
+        return Context.javaToJS(timer, scope);
     }
 }

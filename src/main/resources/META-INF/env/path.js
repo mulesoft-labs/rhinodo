@@ -3,22 +3,22 @@
     importPackage(java.io);
 
     exports.join = function() {
+      importPackage(org.apache.commons.io);
       var path = "";
 
       for(var i = 0; i < arguments.length; i++) {
         if (i == 0 && arguments.length > 1 ) {
             path += arguments[i];
-
         } else {
-            path += "/" + arguments[i];
+            path = FilenameUtils.concat(path, arguments[i]);
         }
       }
-        return path;
+        return "" + path;
     };
 
 
     exports.dirname = function(file) {
-        return ("" + new File(file).getParent());
+        return ("" + new File(file).getAbsoluteFile().getParent());
     };
 
     var basename;
@@ -27,7 +27,7 @@
             return basename(p).slice(0,-(ext.length));
         }
 
-        var path =(new File(p)).getPath();
+        var path =(new File(p)).getAbsoluteFile().getPath();
         var i = path.lastIndexOf(File.separator);
         return ("" + path.substr(i+1));
     };

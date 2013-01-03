@@ -90,12 +90,13 @@ public class NodeRequire extends Require {
                 ScriptableObject.PERMANENT);
     }
 
-    public NodeRequire(final Queue<Function> asyncCallbacksQueue, Context cx, final Scriptable globalScope,
-                       ModuleScriptProvider moduleScriptProvider, Script preExec, Script postExec,
-                       boolean sandboxed, ExitCallbackExecutor exitCallbackExecutor) {
+    public NodeRequire(final Queue<Function> asyncCallbacksQueue, final Scriptable env, final Context cx,
+                       final Scriptable globalScope,
+                       final ModuleScriptProvider moduleScriptProvider, final Script preExec, final Script postExec,
+                       boolean sandboxed, final ExitCallbackExecutor exitCallbackExecutor) {
         super(cx,globalScope,moduleScriptProvider,preExec,postExec,sandboxed);
         this.exitCallbackExecutor = exitCallbackExecutor;
-        loadNativeModules(cx, globalScope, asyncCallbacksQueue);
+        loadNativeModules(env, cx, globalScope, asyncCallbacksQueue);
 
         ScriptableObject.putProperty(this, "cache", new NativeObject());
 
@@ -120,22 +121,19 @@ public class NodeRequire extends Require {
         Scriptable process = nativeModuleMap.get("process");
         ScriptableObject.putProperty(globalScope, "process", process);
 
-
         ScriptableObject.putProperty(globalScope, "clearTimeout", new ClearTimeout());
-
         ScriptableObject.putProperty(globalScope, "setTimeout", new SetTimeout(asyncCallbacksQueue));
-
         ScriptableObject.putProperty(globalScope, "clearInterval", new ClearInterval());
-
         ScriptableObject.putProperty(globalScope, "setInterval", new SetInterval(asyncCallbacksQueue));
 
         this.preExec = preExec;
         this.postExec = postExec;
     }
 
-    private void loadNativeModules(Context cx, Scriptable globalScope, Queue<Function> asyncCallbacksQueue) {
+    private void loadNativeModules(Scriptable env, Context cx, Scriptable globalScope,
+                                   Queue<Function> asyncCallbacksQueue) {
         NativeModule[] nativeModules = {new FsNativeModule(asyncCallbacksQueue),
-                new ProcessNativeModule(asyncCallbacksQueue, exitCallbackExecutor),
+                new ProcessNativeModule(env, asyncCallbacksQueue, exitCallbackExecutor),
                 new ChildProcessNativeModule(asyncCallbacksQueue),
                 new VmNativeModule(asyncCallbacksQueue)};
         nativeModuleMap = new HashMap<String, Scriptable>();
@@ -206,10 +204,16 @@ public class NodeRequire extends Require {
             File file;
             if ( cwdFile != null ) {
                 file = new File(FilenameUtils.concat(cwdFile.getAbsolutePath(), id + extensionAsString));
+
+                /* Case of ./ only where we need to add index.js */
+                if (!file.exists()) {
+                    file = new File(FilenameUtils.concat(cwdFile.getAbsolutePath(), id + "index" + extensionAsString));
+                }
             } else {
                 /* Case of /a/b/c.js */
                 file = new File(id + extensionAsString);
             }
+
             if ( file.exists() ) {
                 Function value = ScriptableObject.getTypedProperty(extensions, extensionAsString,
                         Function.class);

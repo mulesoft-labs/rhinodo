@@ -9,60 +9,105 @@
 package org.mule.tools.rhinodo.impl;
 
 import org.mozilla.javascript.*;
+import org.mozilla.javascript.tools.debugger.Main;
 import org.mule.tools.rhinodo.api.ConsoleFactory;
 import org.mule.tools.rhinodo.api.NodeModuleFactory;
 import org.mule.tools.rhinodo.rhino.NodeJsGlobal;
 import org.mule.tools.rhinodo.rhino.NodeRequireBuilder;
 
-import java.io.File;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 
 public class Rhinodo {
 
-    private final NodeModuleFactory nodeModuleFactory;
+    public static final int DEBUG_WINDOW_WIDTH = 600;
+    public static final int DEBUG_WINDOW_HEIGHT = 460;
     private final Queue<Function> asyncFunctionQueue = new LinkedList<Function>();
-    private final ConsoleFactory consoleFactory;
-    private final Context ctx;
-    private final Function callback;
 
     public static RhinodoBuilder create() {
         return new RhinodoBuilder();
     }
 
-    Rhinodo(ConsoleFactory consoleFactory, NodeModuleFactory nodeModuleFactory, Context context, Function callback) {
-        this.consoleFactory = consoleFactory;
-        this.nodeModuleFactory = nodeModuleFactory;
-        this.ctx = context;
-        this.callback = callback;
+    Rhinodo(final ConsoleFactory consoleFactory,
+            final NodeModuleFactory nodeModuleFactory,
+            final ContextFactory contextFactory,
+            final Map<String, String> env,
+            final Function callback,
+            final boolean debug) {
 
-        NodeJsGlobal global = new NodeJsGlobal();
+        final NodeJsGlobal global = new NodeJsGlobal();
+        final Main main  = debug ? doDebug(contextFactory, global) : null;
 
-        global.initStandardObjects(ctx, false);
+        contextFactory.call(new ContextAction() {
+            @Override
+            public Object run(Context ctx) {
+                ctx.setOptimizationLevel(debug ? -1 : 9);
+                ctx.setLanguageVersion(Context.VERSION_1_8);
+                global.initStandardObjects(ctx, false);
 
-        try {
-            ExitCallbackExecutor exitCallbackExecutor = new ExitCallbackExecutor();
-            global.installNodeJsRequire(ctx, nodeModuleFactory,
-                    new NodeRequireBuilder(asyncFunctionQueue, exitCallbackExecutor), false);
+                if ( debug ) {
 
-            Scriptable console = consoleFactory.getConsoleAsScriptable(global);
-            ScriptableObject.putProperty(global, "console", console);
+                    ScriptableObject.putProperty(global, "strikeThePose", new BaseFunction() {
+                        @Override
+                        public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                            main.doBreak();
+                            return Undefined.instance;
+                        }
+                    });
 
-            callback.call(ctx, global, global, new Object[]{});
+                }
 
-            Function asyncToExecute;
-            while ( (asyncToExecute = asyncFunctionQueue.poll()) != null ) {
-                asyncToExecute.call(ctx,global,global,new Object[] {});
+                ExitCallbackExecutor exitCallbackExecutor = new ExitCallbackExecutor();
+
+                Scriptable envAsScriptable = mapToScriptable(ctx, global, env);
+
+                global.installNodeJsRequire(ctx, envAsScriptable, nodeModuleFactory,
+                        new NodeRequireBuilder(asyncFunctionQueue, exitCallbackExecutor), false);
+
+                Scriptable console = consoleFactory.getConsoleAsScriptable(global);
+                ScriptableObject.putProperty(global, "console", console);
+
+                callback.call(ctx, global, global, new Object[]{});
+
+                Function asyncToExecute;
+                while ( (asyncToExecute = asyncFunctionQueue.poll()) != null ) {
+                    asyncToExecute.call(ctx,global,global,new Object[] {});
+                }
+
+                Function function = exitCallbackExecutor.get();
+                if ( function != null ) {
+                    function.call(ctx, global, global, new Object[]{});
+                }
+
+                return Undefined.instance;
             }
+        });
 
-            Function function = exitCallbackExecutor.get();
-            if ( function != null ) {
-                function.call(ctx, global, global, new Object[]{});
-            }
+    }
 
-        } finally {
-            Context.exit();
+    private Scriptable mapToScriptable(Context ctx, NodeJsGlobal global, Map<String, String> env) {
+        Scriptable envAsScriptable = ctx.newObject(global);
+
+        for (Map.Entry<String, String> stringStringEntry : env.entrySet()) {
+            ScriptableObject.putProperty(envAsScriptable, stringStringEntry.getKey(),
+                    Context.javaToJS(stringStringEntry.getValue(),global));
         }
+        return envAsScriptable;
+    }
+
+    private Main doDebug(ContextFactory contextFactory, NodeJsGlobal global) {
+        final Main main = new Main("Rhino JavaScript Debugger");
+
+        main.attachTo(contextFactory);
+
+        main.setScope(global);
+
+        main.pack();
+        main.setSize(DEBUG_WINDOW_WIDTH, DEBUG_WINDOW_HEIGHT);
+        main.setVisible(true);
+
+        return main;
     }
 
 }

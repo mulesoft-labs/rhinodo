@@ -26,7 +26,7 @@ public class Exists extends BaseFunction {
             throw new RuntimeException("Only exists with 1 and 2 parameters supported");
         }
 
-        final File file = new File(Context.toString(args[0]));
+        final File file = new File(Context.toString(args[0])).getAbsoluteFile();
         final Function callback = (Function) args[1];
 
         if (callback != null) {

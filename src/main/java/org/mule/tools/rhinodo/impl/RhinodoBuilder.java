@@ -8,8 +8,9 @@
 
 package org.mule.tools.rhinodo.impl;
 
-import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Function;
+import org.mozilla.javascript.Scriptable;
 import org.mule.tools.rhinodo.api.ConsoleFactory;
 import org.mule.tools.rhinodo.api.NodeModuleFactory;
 import org.mule.tools.rhinodo.impl.console.SystemOutConsole;
@@ -19,12 +20,15 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Map;
 
 public class RhinodoBuilder {
     private ConsoleFactory consoleFactory = new WrappingConsoleFactory(new SystemOutConsole());
     private NodeModuleFactory nodeModuleFactory = new NodeModuleFactoryImpl();
-    private Context context;
     private File destDir;
+    private ContextFactory contextFactory = new ContextFactory();
+    private boolean debug = false;
+    private Map<String,String> env = System.getenv();
 
     private static URI getURIFromResources(Class<?> klass, String path) {
         ClassLoader classLoader = klass.getClassLoader();
@@ -54,13 +58,23 @@ public class RhinodoBuilder {
         return this;
     }
 
-    public RhinodoBuilder context(Context context) {
-        this.context = context;
+    public RhinodoBuilder context(ContextFactory contextFactory) {
+        this.contextFactory = contextFactory;
+        return this;
+    }
+
+    public RhinodoBuilder debug(boolean debug) {
+        this.debug = debug;
         return this;
     }
 
     public RhinodoBuilder destDir(File destDir)  {
         this.destDir = destDir;
+        return this;
+    }
+
+    public RhinodoBuilder env(Map<String,String> env) {
+        this.env = env;
         return this;
     }
 
@@ -71,13 +85,10 @@ public class RhinodoBuilder {
             this.destDir = new File(userHome, ".rhinodo");
         }
 
-        context = Context.enter();
-        context.setOptimizationLevel(9);
-        context.setLanguageVersion(Context.VERSION_1_8);
         this.nodeModuleFactory = new PrimitiveNodeModuleFactory(
                 JavascriptResource.copyFromJarAndCreate(getURIFromResources(this.getClass(),"META-INF/env"), destDir),
                 nodeModuleFactory);
-        return new Rhinodo(this.consoleFactory, this.nodeModuleFactory, this.context, callback);
+        return new Rhinodo(this.consoleFactory, this.nodeModuleFactory, this.contextFactory, env, callback, debug);
     }
 
 }

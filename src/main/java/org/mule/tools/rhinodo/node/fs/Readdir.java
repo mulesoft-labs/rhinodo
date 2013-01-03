@@ -11,6 +11,7 @@ package org.mule.tools.rhinodo.node.fs;
 import org.mozilla.javascript.*;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Queue;
 
 public class Readdir extends BaseFunction {
@@ -26,28 +27,22 @@ public class Readdir extends BaseFunction {
             throw new RuntimeException("Only readdir 2 parameters supported");
         }
 
-        final File file = new File(Context.toString(args[0]));
-        final Function callback = (Function) (args[1]);
-
-        String[] lst = file.list();
-        final Scriptable newLst = cx.newArray(scope, 0);
-
-        if ( lst == null ) {
-            throw new IllegalArgumentException("Error listing directory: " + file);
-        }
-
-        Function push = ScriptableObject.getTypedProperty(newLst, "push", Function.class);
-
-        for (String aLst : lst) {
-            push.call(cx,scope,newLst, new Object[] {Context.javaToJS(aLst, scope)});
-        }
+        final File file = new File(Context.toString(args[0])).getAbsoluteFile();
+        final Function callback = (Function) args[1];
 
         if (callback != null) {
             asyncCallbacksQueue.add(new BaseFunction() {
 
                 @Override
                 public Object call(Context cx2, Scriptable scope2, Scriptable thisObj2, Object[] args2) {
-                    return callback.call(cx, scope, thisObj, new Object[] {null, newLst});
+                    String[] list = file.list();
+                    if ( list == null ) {
+                        return callback.call(cx, scope, thisObj, new Object[] {null, Undefined.instance});
+                    }
+                    Object[] objects = new Object[list.length];
+                    System.arraycopy(list, 0, objects, 0, list.length);
+
+                    return callback.call(cx, scope, thisObj, new Object[] {null, cx.newArray(scope, objects)});
                 }
             });
         }

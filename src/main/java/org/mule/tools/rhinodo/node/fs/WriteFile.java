@@ -38,7 +38,7 @@ public class WriteFile extends BaseFunction {
     private Object writeFile(final Context cx, final Scriptable scope, final Scriptable thisObj, String file,
                              String data, final Function callback) {
         try {
-            FileUtils.write(new File(file), data);
+            FileUtils.write(new File(file).getAbsoluteFile(), data);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

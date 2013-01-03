@@ -19,7 +19,7 @@ public class ReadStream {
 
     public ReadStream(Queue<Function> asyncFunctionQueue, String file) {
         this.asyncFunctionQueue = asyncFunctionQueue;
-        this.file = new File(file);
+        this.file = new File(file).getAbsoluteFile();
     }
 
     public Request pipe(WriteStream writeStream) {

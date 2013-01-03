@@ -3,5 +3,5 @@ exports.type = function() {
 }
 exports.platform = function() {
     importPackage(java.lang);
-    System.getProperty("os.name");
+    return "" + System.getProperty("os.name");
 }

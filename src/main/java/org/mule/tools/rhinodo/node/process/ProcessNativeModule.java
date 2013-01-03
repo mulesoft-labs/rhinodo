@@ -11,16 +11,17 @@ package org.mule.tools.rhinodo.node.process;
 import org.mozilla.javascript.*;
 import org.mule.tools.rhinodo.impl.ExitCallbackExecutor;
 import org.mule.tools.rhinodo.node.AbstractNativeModule;
-import org.mule.tools.rhinodo.rhino.RhinoHelper;
 
 import java.util.Queue;
 
 public class ProcessNativeModule extends AbstractNativeModule {
     private final ExitCallbackExecutor exitCallbackExecutor;
+    private final Scriptable env;
 
-    public ProcessNativeModule(final Queue<Function> asyncFunctionQueue,
+    public ProcessNativeModule(final Scriptable env,final Queue<Function> asyncFunctionQueue,
                                ExitCallbackExecutor exitCallbackExecutor) {
         super(asyncFunctionQueue);
+        this.env = env;
         this.exitCallbackExecutor = exitCallbackExecutor;
     }
 
@@ -29,11 +30,9 @@ public class ProcessNativeModule extends AbstractNativeModule {
         return "process";
     }
 
-
     @Override
     protected void populateModule(Scriptable module, Queue<Function> asyncFunctionQueue) {
 
-        NativeObject env = new RhinoHelper().mapToNativeObject(System.getenv());
         ScriptableObject.putProperty(module, "env", env);
 
         //TODO Unmock
@@ -81,10 +80,12 @@ public class ProcessNativeModule extends AbstractNativeModule {
         ScriptableObject.putProperty(module, "exit", new BaseFunction() {
             @Override
             public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-                // Remove all the async calls to force exit
-                getAsyncFunctionQueue().clear();
+                // TODO Implement me right
                 return Undefined.instance;
             }
         });
+
+        ScriptableObject.putProperty(module, "stdout", getContext().newObject(getScope()));
+
     }
 }

@@ -22,7 +22,7 @@ public class WriteStream {
 
     public WriteStream(Queue<Function> asyncFunctionQueue, String file) {
         this.asyncFunctionQueue = asyncFunctionQueue;
-        this.file = new File(file);
+        this.file = new File(file).getAbsoluteFile();
     }
 
     File getFile() {

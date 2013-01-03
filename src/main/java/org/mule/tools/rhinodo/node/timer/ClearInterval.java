@@ -16,7 +16,7 @@ import org.mozilla.javascript.Undefined;
 public class ClearInterval extends BaseFunction {
     @Override
     public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-        final Timer timer = (Timer) args[0];
+        final Timer timer = (Timer) Context.jsToJava(args[0], Timer.class);
         timer.setShouldExecute(false);
         return Undefined.instance;
     }

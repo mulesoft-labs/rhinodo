@@ -8,6 +8,7 @@
 
 package org.mule.tools.rhinodo.node.fs;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.mozilla.javascript.BaseFunction;
 import org.mozilla.javascript.Context;
@@ -29,23 +30,10 @@ public class ReadFileSync extends BaseFunction {
         final String file = Context.toString(args[0]);
         String encoding = args.length > 1 ? Context.toString(args[1]) : "UTF-8";
 
-        List<String> lines;
         try {
-            lines = IOUtils.readLines(new FileInputStream(new File(file)), encoding);
+            return FileUtils.readFileToString(new File(file).getAbsoluteFile(), encoding);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        final StringBuilder sb = new StringBuilder();
-        int i = 0;
-
-        for (i = 0; i < lines.size(); i++ ) {
-            if ( i == 0 ) {
-                sb.append(lines.get(i));
-            } else {
-                sb.append('\n').append(lines.get(i));
-            }
-        }
-
-        return sb.toString();
     }
 }

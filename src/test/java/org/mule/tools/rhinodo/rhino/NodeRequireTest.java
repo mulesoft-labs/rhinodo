@@ -77,7 +77,7 @@ public class NodeRequireTest {
 
                 cx.initStandardObjects(globalScope);
 
-                NodeRequire nodeRequire = new NodeRequire(asyncCallback, cx ,globalScope,
+                NodeRequire nodeRequire = new NodeRequire(asyncCallback,cx.newObject(globalScope), cx ,globalScope,
                         moduleScriptProvider, pre, post, false, exitCallbackExecutor);
                 try {
                     Object call = nodeRequire.call(cx, globalScope, globalScope, new Object[]{tree.getAbsolutePath()});
@@ -112,7 +112,7 @@ public class NodeRequireTest {
             @Override
             public Object run(Context cx) {
                 cx.initStandardObjects(globalScope);
-                NodeRequire nodeRequire = new NodeRequire(asyncCallback, cx,globalScope,
+                NodeRequire nodeRequire = new NodeRequire(asyncCallback,cx.newObject(globalScope), cx,globalScope,
                         moduleScriptProvider, pre, post, false, exitCallbackExecutor);
                 nodeRequire.call(cx,globalScope,globalScope, new Object[]{tree.getAbsolutePath()});
                 fail();
@@ -166,7 +166,7 @@ public class NodeRequireTest {
             public Object run(Context cx) {
                 cx.initStandardObjects(globalScope);
                 NodeRequireBuilder rb = new NodeRequireBuilder(asyncCallback, exitCallbackExecutor);
-                globalScope.installNodeJsRequire(cx,new NodeModuleFactoryImpl(
+                globalScope.installNodeJsRequire(cx,cx.newObject(globalScope),new NodeModuleFactoryImpl(
                         new ArrayList<NodeModule>()),
                         rb, false);
                 Function nodeRequire = ScriptableObject.getTypedProperty(
@@ -214,7 +214,7 @@ public class NodeRequireTest {
             public Object run(Context cx) {
                 cx.initStandardObjects(globalScope);
                 NodeRequireBuilder rb = new NodeRequireBuilder(asyncCallback, exitCallbackExecutor);
-                globalScope.installNodeJsRequire(cx,new NodeModuleFactoryImpl(
+                globalScope.installNodeJsRequire(cx,cx.newObject(globalScope),new NodeModuleFactoryImpl(
                         new ArrayList<NodeModule>()),
                         rb, false);
                 Function nodeRequire = ScriptableObject.getTypedProperty(
@@ -257,7 +257,8 @@ public class NodeRequireTest {
                         mock(ExitCallbackExecutor.class);
 
 
-                NodeRequire nodeRequire = new NodeRequire(asyncCallback, cx, globalScope, moduleScriptProvider,
+                NodeRequire nodeRequire = new NodeRequire(asyncCallback, cx.newObject(globalScope),
+                        cx, globalScope, moduleScriptProvider,
                         pre, post, false, exitCallbackExecutor);
 
                 NativeObject extensions = ScriptableObject.getTypedProperty(nodeRequire, "extensions",
@@ -298,7 +299,7 @@ public class NodeRequireTest {
                 final Script pre = mock(Script.class);
                 final Script post = mock(Script.class);
 
-                NodeRequire nodeRequire = new NodeRequire(asyncCallback, cx, globalScope,
+                NodeRequire nodeRequire = new NodeRequire(asyncCallback, cx.newObject(globalScope), cx, globalScope,
                         moduleScriptProvider, pre, post, false, exitCallbackExecutor);
 
                 NativeObject extensions = ScriptableObject.getTypedProperty(nodeRequire, "extensions",
@@ -342,7 +343,7 @@ public class NodeRequireTest {
                 final Script pre = mock(Script.class);
                 final Script post = mock(Script.class);
 
-                NodeRequire nodeRequire = new NodeRequire(asyncCallback, cx, globalScope,
+                NodeRequire nodeRequire = new NodeRequire(asyncCallback, cx.newObject(globalScope), cx, globalScope,
                         moduleScriptProvider, pre, post, false, exitCallbackExecutor);
 
                 Scriptable extensions = ScriptableObject.getTypedProperty(nodeRequire, "extensions", Scriptable.class);
@@ -362,6 +363,45 @@ public class NodeRequireTest {
                 assertSame(myExtensionCallback, extensionFound.getCallback());
 
                 return null;
+            }
+        });
+    }
+
+    @Test
+    public void dotSlash() throws Exception {
+
+        final File file = folder.newFolder("myfolder");
+        final File file1 = new File(file, "file1.js");
+        final File index = new File(file, "index.js");
+
+        FileUtils.write(index, "exports.msg = 'bar';");
+        FileUtils.write(file1, "var x = require('./'); exports.foo = x.msg;");
+        final ExitCallbackExecutor exitCallbackExecutor =
+                mock(ExitCallbackExecutor.class);
+
+        final Queue asyncCallback = mock(Queue.class);
+        final NodeJsGlobal globalScope = new NodeJsGlobal();
+
+        ContextFactory contextFactory = new ContextFactory();
+        contextFactory.call(new ContextAction() {
+            @Override
+            public Object run(Context cx) {
+                cx.initStandardObjects(globalScope);
+                NodeRequireBuilder rb = new NodeRequireBuilder(asyncCallback, exitCallbackExecutor);
+                globalScope.installNodeJsRequire(cx,cx.newObject(globalScope),new NodeModuleFactoryImpl(
+                        new ArrayList<NodeModule>()),
+                        rb, false);
+                Function nodeRequire = ScriptableObject.getTypedProperty(
+                        globalScope, "require", Function.class);
+                String absolutePath = file1.getAbsolutePath();
+                Scriptable file1Object = (Scriptable) nodeRequire.call(cx, globalScope, globalScope,
+                        new Object[]{absolutePath.substring(0, absolutePath.length() - 3)});
+
+                assertNotNull(file1Object);
+
+                assertEquals("bar", ScriptableObject.getTypedProperty(file1Object, "foo", String.class));
+
+                return Undefined.instance;
             }
         });
     }

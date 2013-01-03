@@ -8,6 +8,7 @@
 
 package org.mule.tools.rhinodo.node.fs;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.mozilla.javascript.*;
 
@@ -30,32 +31,21 @@ public class ReadFile extends BaseFunction {
     private Object readFile(final Context cx, final Scriptable scope, final Scriptable thisObj,
                             String file, String encoding,final Function callback) {
 
-        List<String> lines = null;
-
+        final String result;
         try {
-            lines = IOUtils.readLines(new FileInputStream(new File(file)), encoding);
+            result = FileUtils.readFileToString(new File(file).getAbsoluteFile(), encoding);
         } catch (IOException e) {
             if (callback != null) {
                 asyncCallbacksQueue.add(new BaseFunction() {
 
                     @Override
                     public Object call(Context cx2, Scriptable scope2, Scriptable thisObj2, Object[] args2) {
-                        return callback.call(cx, scope, thisObj, new Object[] {true, Undefined.instance});
+                        return callback.call(cx, scope, thisObj, new Object[] {true});
                     }
                 });
             }
 
             return Undefined.instance;
-        }
-        final StringBuilder sb = new StringBuilder();
-        int i = 0;
-
-        for (i = 0; i < lines.size(); i++ ) {
-            if ( i == 0 ) {
-                sb.append(lines.get(i));
-            } else {
-                sb.append('\n').append(lines.get(i));
-            }
         }
 
         if (callback != null) {
@@ -63,7 +53,7 @@ public class ReadFile extends BaseFunction {
 
                 @Override
                 public Object call(Context cx2, Scriptable scope2, Scriptable thisObj2, Object[] args2) {
-                    return callback.call(cx, scope, thisObj, new Object[] {null, sb.toString()});
+                    return callback.call(cx, scope, thisObj, new Object[] {null, result});
                 }
             });
         }
