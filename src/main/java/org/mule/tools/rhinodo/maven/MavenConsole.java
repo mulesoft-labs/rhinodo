@@ -45,6 +45,6 @@ public class MavenConsole implements Console {
 
     @Override
     public void log(String message) {
-        log.debug(message);
+        log.info(message);
     }
 }
