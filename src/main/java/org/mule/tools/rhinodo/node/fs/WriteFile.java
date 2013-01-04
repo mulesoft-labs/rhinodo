@@ -13,6 +13,7 @@ import org.mozilla.javascript.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Queue;
 
 public class WriteFile extends BaseFunction {
@@ -38,7 +39,7 @@ public class WriteFile extends BaseFunction {
     private Object writeFile(final Context cx, final Scriptable scope, final Scriptable thisObj, String file,
                              String data, final Function callback) {
         try {
-            FileUtils.write(new File(file).getAbsoluteFile(), data);
+            FileUtils.write(new File(file).getAbsoluteFile(), data, Charset.forName("UTF-8"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
