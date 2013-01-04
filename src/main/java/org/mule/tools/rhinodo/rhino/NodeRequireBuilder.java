@@ -96,10 +96,12 @@ public class NodeRequireBuilder {
         }
 
         private void copyKeys(Scriptable oldExport, Scriptable newExport) {
-            for (Object o : newExport.getIds()) {
+            for (Object o : ScriptableObject.getPropertyIds(newExport)) {
                 String name = o.toString();
                 ScriptableObject.putProperty(oldExport, name, ScriptableObject.getProperty(newExport, name));
             }
+
+            ScriptableObject.putProperty(oldExport, "prototype", ScriptableObject.getProperty(newExport, "prototype"));
         }
     }
 

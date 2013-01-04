@@ -20,7 +20,7 @@ import org.mozilla.javascript.commonjs.module.ModuleScript;
 import org.mozilla.javascript.commonjs.module.ModuleScriptProvider;
 import org.mule.tools.rhinodo.api.NodeModule;
 import org.mule.tools.rhinodo.impl.ExitCallbackExecutor;
-import org.mule.tools.rhinodo.impl.NodeModuleFactoryImpl;
+import org.mule.tools.rhinodo.impl.NodeModuleProviderImpl;
 
 import java.io.File;
 import java.net.URI;
@@ -166,7 +166,7 @@ public class NodeRequireTest {
             public Object run(Context cx) {
                 cx.initStandardObjects(globalScope);
                 NodeRequireBuilder rb = new NodeRequireBuilder(asyncCallback, exitCallbackExecutor);
-                globalScope.installNodeJsRequire(cx,cx.newObject(globalScope),new NodeModuleFactoryImpl(
+                globalScope.installNodeJsRequire(cx,cx.newObject(globalScope),new NodeModuleProviderImpl(
                         new ArrayList<NodeModule>()),
                         rb, false);
                 Function nodeRequire = ScriptableObject.getTypedProperty(
@@ -214,7 +214,7 @@ public class NodeRequireTest {
             public Object run(Context cx) {
                 cx.initStandardObjects(globalScope);
                 NodeRequireBuilder rb = new NodeRequireBuilder(asyncCallback, exitCallbackExecutor);
-                globalScope.installNodeJsRequire(cx,cx.newObject(globalScope),new NodeModuleFactoryImpl(
+                globalScope.installNodeJsRequire(cx,cx.newObject(globalScope),new NodeModuleProviderImpl(
                         new ArrayList<NodeModule>()),
                         rb, false);
                 Function nodeRequire = ScriptableObject.getTypedProperty(
@@ -388,7 +388,7 @@ public class NodeRequireTest {
             public Object run(Context cx) {
                 cx.initStandardObjects(globalScope);
                 NodeRequireBuilder rb = new NodeRequireBuilder(asyncCallback, exitCallbackExecutor);
-                globalScope.installNodeJsRequire(cx,cx.newObject(globalScope),new NodeModuleFactoryImpl(
+                globalScope.installNodeJsRequire(cx,cx.newObject(globalScope),new NodeModuleProviderImpl(
                         new ArrayList<NodeModule>()),
                         rb, false);
                 Function nodeRequire = ScriptableObject.getTypedProperty(

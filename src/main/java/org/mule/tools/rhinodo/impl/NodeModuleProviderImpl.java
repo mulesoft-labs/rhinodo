@@ -9,20 +9,20 @@
 package org.mule.tools.rhinodo.impl;
 
 import org.mule.tools.rhinodo.api.NodeModule;
-import org.mule.tools.rhinodo.api.NodeModuleFactory;
+import org.mule.tools.rhinodo.api.NodeModuleProvider;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class NodeModuleFactoryImpl implements NodeModuleFactory {
+public class NodeModuleProviderImpl implements NodeModuleProvider {
 
     private List<NodeModule> nodeModules = new ArrayList<NodeModule>();
 
-    public NodeModuleFactoryImpl() {}
+    public NodeModuleProviderImpl() {}
 
-    public NodeModuleFactoryImpl(Class<?> klass, String destDir, String... nodeModulesNames) {
+    public NodeModuleProviderImpl(Class<?> klass, String destDir, String... nodeModulesNames) {
         String prefix = "META-INF/node_modules";
 
         for (String nodeModuleName : nodeModulesNames) {
@@ -31,11 +31,11 @@ public class NodeModuleFactoryImpl implements NodeModuleFactory {
 
     }
 
-    public <T extends NodeModule> NodeModuleFactoryImpl(T... nodeModules) {
+    public <T extends NodeModule> NodeModuleProviderImpl(T... nodeModules) {
         Collections.addAll(this.nodeModules, nodeModules);
     }
 
-    public NodeModuleFactoryImpl(List<? extends NodeModule> nodeModules) {
+    public NodeModuleProviderImpl(List<? extends NodeModule> nodeModules) {
         this.nodeModules.addAll(nodeModules);
     }
 

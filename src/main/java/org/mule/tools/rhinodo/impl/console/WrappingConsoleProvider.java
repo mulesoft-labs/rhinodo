@@ -11,16 +11,16 @@ package org.mule.tools.rhinodo.impl.console;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mule.tools.rhinodo.api.Console;
-import org.mule.tools.rhinodo.api.ConsoleFactory;
+import org.mule.tools.rhinodo.api.ConsoleProvider;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WrappingConsoleFactory implements ConsoleFactory {
+public class WrappingConsoleProvider implements ConsoleProvider {
     private Console console;
 
-    public WrappingConsoleFactory(Console console) {
+    public WrappingConsoleProvider(Console console) {
         this.console = console;
     }
 

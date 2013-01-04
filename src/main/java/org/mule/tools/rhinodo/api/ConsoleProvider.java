@@ -10,6 +10,6 @@ package org.mule.tools.rhinodo.api;
 
 import org.mozilla.javascript.Scriptable;
 
-public interface ConsoleFactory {
+public interface ConsoleProvider {
     Scriptable getConsoleAsScriptable(Scriptable scope);
 }

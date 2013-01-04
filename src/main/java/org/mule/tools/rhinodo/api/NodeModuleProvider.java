@@ -10,6 +10,6 @@ package org.mule.tools.rhinodo.api;
 
 import java.util.Collection;
 
-public interface NodeModuleFactory {
+public interface NodeModuleProvider {
     Collection<? extends NodeModule> getModules();
 }

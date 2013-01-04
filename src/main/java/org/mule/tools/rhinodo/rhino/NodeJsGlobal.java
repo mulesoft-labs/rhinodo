@@ -14,7 +14,7 @@ import org.mozilla.javascript.commonjs.module.Require;
 import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider;
 import org.mozilla.javascript.tools.shell.Global;
 import org.mule.tools.rhinodo.api.NodeModule;
-import org.mule.tools.rhinodo.api.NodeModuleFactory;
+import org.mule.tools.rhinodo.api.NodeModuleProvider;
 
 import java.io.File;
 import java.net.URI;
@@ -29,12 +29,12 @@ public class NodeJsGlobal extends Global {
         return super.installRequire(cx, modulePath, sandboxed);
     }
 
-    public Require installNodeJsRequire(Context cx, Scriptable env, NodeModuleFactory nodeModuleFactory,
+    public Require installNodeJsRequire(Context cx, Scriptable env, NodeModuleProvider nodeModuleProvider,
                                         NodeRequireBuilder rb, boolean sandboxed) {
         rb.setSandboxed(sandboxed);
         Map<String, URI> uris = new LinkedHashMap<String, java.net.URI>();
-        if (nodeModuleFactory != null) {
-            for (NodeModule nodeModule : nodeModuleFactory.getModules()) {
+        if (nodeModuleProvider != null) {
+            for (NodeModule nodeModule : nodeModuleProvider.getModules()) {
                 try {
                     URI uri = nodeModule.getPath();
                     if (!uri.isAbsolute()) {

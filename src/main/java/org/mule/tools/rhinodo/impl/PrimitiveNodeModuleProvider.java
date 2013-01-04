@@ -9,20 +9,20 @@
 package org.mule.tools.rhinodo.impl;
 
 import org.mule.tools.rhinodo.api.NodeModule;
-import org.mule.tools.rhinodo.api.NodeModuleFactory;
+import org.mule.tools.rhinodo.api.NodeModuleProvider;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class PrimitiveNodeModuleFactory implements NodeModuleFactory {
+public class PrimitiveNodeModuleProvider implements NodeModuleProvider {
 
-    private NodeModuleFactory nodeModuleFactory;
+    private NodeModuleProvider nodeModuleProvider;
     private List<NodeModuleImpl> nodeModuleList;
 
-    public PrimitiveNodeModuleFactory(JavascriptResource env, NodeModuleFactory nodeModuleFactory) {
-        this.nodeModuleFactory = nodeModuleFactory;
+    public PrimitiveNodeModuleProvider(JavascriptResource env, NodeModuleProvider nodeModuleProvider) {
+        this.nodeModuleProvider = nodeModuleProvider;
         this.nodeModuleList = new ArrayList<NodeModuleImpl>();
 
         if (env == null) {
@@ -50,7 +50,7 @@ public class PrimitiveNodeModuleFactory implements NodeModuleFactory {
     @Override
     public Collection<? extends NodeModule> getModules() {
         ArrayList<NodeModule> nodeModules = new ArrayList<NodeModule>(nodeModuleList);
-        nodeModules.addAll(nodeModuleFactory.getModules());
+        nodeModules.addAll(nodeModuleProvider.getModules());
         return nodeModules;
     }
 }

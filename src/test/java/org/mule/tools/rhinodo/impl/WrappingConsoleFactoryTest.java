@@ -12,7 +12,8 @@ import org.junit.Test;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.tools.shell.Global;
 import org.mule.tools.rhinodo.impl.console.SystemOutConsole;
-import org.mule.tools.rhinodo.impl.console.WrappingConsoleFactory;
+import org.mule.tools.rhinodo.impl.console.WrappingConsoleProvider;
+import org.mule.tools.rhinodo.impl.console.WrappingConsoleProvider;
 
 import static org.junit.Assert.assertFalse;
 
@@ -22,8 +23,8 @@ public class WrappingConsoleFactoryTest {
 
         final Global globalScope = new Global();
 
-        final WrappingConsoleFactory wrappingConsoleFactory =
-                new WrappingConsoleFactory(new SystemOutConsole());
+        final WrappingConsoleProvider wrappingConsoleFactory =
+                new WrappingConsoleProvider(new SystemOutConsole());
 
         ContextFactory contextFactory = new ContextFactory();
         contextFactory.call(new ContextAction() {

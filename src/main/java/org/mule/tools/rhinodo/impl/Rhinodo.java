@@ -10,8 +10,8 @@ package org.mule.tools.rhinodo.impl;
 
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.tools.debugger.Main;
-import org.mule.tools.rhinodo.api.ConsoleFactory;
-import org.mule.tools.rhinodo.api.NodeModuleFactory;
+import org.mule.tools.rhinodo.api.ConsoleProvider;
+import org.mule.tools.rhinodo.api.NodeModuleProvider;
 import org.mule.tools.rhinodo.rhino.NodeJsGlobal;
 import org.mule.tools.rhinodo.rhino.NodeRequireBuilder;
 
@@ -21,16 +21,16 @@ import java.util.Queue;
 
 public class Rhinodo {
 
-    public static final int DEBUG_WINDOW_WIDTH = 600;
-    public static final int DEBUG_WINDOW_HEIGHT = 460;
+    public static final int DEBUG_WINDOW_WIDTH = 1200;
+    public static final int DEBUG_WINDOW_HEIGHT = 920;
     private final Queue<Function> asyncFunctionQueue = new LinkedList<Function>();
 
     public static RhinodoBuilder create() {
         return new RhinodoBuilder();
     }
 
-    Rhinodo(final ConsoleFactory consoleFactory,
-            final NodeModuleFactory nodeModuleFactory,
+    Rhinodo(final ConsoleProvider consoleProvider,
+            final NodeModuleProvider nodeModuleProvider,
             final ContextFactory contextFactory,
             final Map<String, String> env,
             final Function callback,
@@ -62,10 +62,10 @@ public class Rhinodo {
 
                 Scriptable envAsScriptable = mapToScriptable(ctx, global, env);
 
-                global.installNodeJsRequire(ctx, envAsScriptable, nodeModuleFactory,
+                global.installNodeJsRequire(ctx, envAsScriptable, nodeModuleProvider,
                         new NodeRequireBuilder(asyncFunctionQueue, exitCallbackExecutor), false);
 
-                Scriptable console = consoleFactory.getConsoleAsScriptable(global);
+                Scriptable console = consoleProvider.getConsoleAsScriptable(global);
                 ScriptableObject.putProperty(global, "console", console);
 
                 callback.call(ctx, global, global, new Object[]{});
