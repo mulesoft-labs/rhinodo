@@ -1,7 +1,7 @@
 # Rhinodo
 
 ### What is Rhinodo? 
-The basic idea behind Rhinodo is to enable running 'node.js' modules in the JVM. So it can be said that it's a compatibility layer that allows you to run 'node' using Mozilla's 'rhino' Javascript implementation.
+The basic idea behind Rhinodo is to enable running 'node.js' modules in the JVM. So it can be said that it's a compatibility layer that allows you to run 'node' using Mozilla's 'rhino' Javascript implementation. So, it can be said that Rhinodo is to Node what JRuby is to Ruby.
 
 ### How to build?
 In order to build, execute the following command:
