@@ -27,4 +27,4 @@ Alberto Pose (@thepose)
 ### License
 Copyright 2012 MuleSoft, Inc. Licensed under the Common Public Attribution License (CPAL), Version 1.0. 
     
-### Happy hacking!
+Happy hacking!
