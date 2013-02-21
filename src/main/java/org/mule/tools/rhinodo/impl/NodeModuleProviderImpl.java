@@ -10,7 +10,13 @@ package org.mule.tools.rhinodo.impl;
 
 import org.mule.tools.rhinodo.api.NodeModule;
 import org.mule.tools.rhinodo.api.NodeModuleProvider;
+import org.mule.tools.rhinodo.tools.JarURIHelper;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,6 +27,45 @@ public class NodeModuleProviderImpl implements NodeModuleProvider {
     private List<NodeModule> nodeModules = new ArrayList<NodeModule>();
 
     public NodeModuleProviderImpl() {}
+
+    public static NodeModuleProviderImpl fromJar(Class<?> klass, String destDir) {
+        String prefix = "META-INF/node_modules";
+
+        URI jarURI = null;
+        try {
+            jarURI = klass.getClassLoader().getResource(prefix).toURI();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new NodeModuleProviderImpl(destDir, jarURI);
+
+    }
+
+    public NodeModuleProviderImpl(String destDir, URI jarURI) {
+        JarURIHelper jarURIHelper;
+        File destDirFile;
+        try {
+            jarURIHelper = new JarURIHelper(jarURI);
+            destDirFile = new File(destDir);
+            jarURIHelper.copyToFolder(destDirFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        FilenameFilter filenameFilter = new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return file.isDirectory();
+            }
+        };
+
+        File destDirMetaInfNodeModulesFile = new File(new File(destDirFile, "META-INF"), "node_modules");
+
+        for (File filePath : destDirMetaInfNodeModulesFile.listFiles(filenameFilter)) {
+            nodeModules.add(NodeModuleImplBuilder.fromFolder(filePath.getAbsolutePath()));
+        }
+    }
 
     public NodeModuleProviderImpl(Class<?> klass, String destDir, String... nodeModulesNames) {
         String prefix = "META-INF/node_modules";
