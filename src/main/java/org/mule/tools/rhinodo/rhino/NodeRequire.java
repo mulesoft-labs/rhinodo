@@ -277,12 +277,16 @@ public class NodeRequire extends Require {
             if ( modulePackageJSON.exists()) {
                 Map<String,String> map = NodeModuleImplBuilder.getPackageJSONMap(modulePackageJSON);
 
+                String main = map.get("main");
+                if (main == null) {
+                    main = "index.js";
+                }
                 /* Fetch entry point */
                 File mainFile = new File(FilenameUtils.concat(modulePath.getPath(),
-                        map.get("main")));
+                        main));
                 if ( !mainFile.exists() ) {
                     mainFile = new File(FilenameUtils.concat(modulePath.getPath(),
-                            map.get("main")+ ".js"));
+                            main + ".js"));
                 }
                 return callSuperWrapped(cx, scope, thisObj,
                         new Object[]{mainFile.getAbsolutePath()});
