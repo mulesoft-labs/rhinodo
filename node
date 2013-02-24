@@ -1,2 +1,0 @@
-#!/bin/zsh
-java -jar "$HOME/Documents/rhinodo/target/rhinodo-1.1-SNAPSHOT-uberjar.jar" "$*"
