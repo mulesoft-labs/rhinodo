@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Rhinodo by mulesoft</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Rhinodo</h1>
+        <p>Execute Node modules in the JVM (powered by Rhino)</p>
+
+        <p class="view"><a href="https://github.com/mulesoft/rhinodo">View the Project on GitHub <small>mulesoft/rhinodo</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/mulesoft/rhinodo/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/mulesoft/rhinodo/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/mulesoft/rhinodo">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>Rhinodo</h1>
+
+<h3>What is Rhinodo?</h3>
+
+<p>The basic idea behind Rhinodo is to enable running 'node.js' modules in the JVM. So it can be said that it's a compatibility layer that allows you to run 'node' using Mozilla's 'rhino' Javascript implementation. So, it can be said that Rhinodo is to Node what JRuby is to Ruby.</p>
+
+<h3>How to build?</h3>
+
+<p>In order to build, execute the following command:</p>
+
+<pre><code>mvn clean install
+</code></pre>
+
+<h2>Useful info</h2>
+
+<h3>Which native modules are (partially) supported?</h3>
+
+<p>Currently, the modules are created on demand as we need them. Most of the functions in the <code>fs</code> module had been implemented. Also, <code>vm</code> and <code>path</code> module are pretty complete too.</p>
+
+<h3>How are the native modules implemented?</h3>
+
+<p>Some native modules are implemented using Java, others using Javascript.</p>
+
+<h3>How Node.js async model has been implemented?</h3>
+
+<p>A queue is used to keep track of all the callback functions that need to be executed. When the queue is empty the program has ended as there is no more code to execute :)</p>
+
+<h2>Misc</h2>
+
+<h3>Authors</h3>
+
+<p>Alberto Pose (@thepose)</p>
+
+<h3>License</h3>
+
+<p>Copyright 2012 MuleSoft, Inc. Licensed under the Common Public Attribution License (CPAL), Version 1.0. </p>
+
+<p>Happy hacking!</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/mulesoft">mulesoft</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-38759312-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
