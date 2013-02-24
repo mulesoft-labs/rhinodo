@@ -105,6 +105,9 @@ public class NodeRequire extends Require {
         BaseFunction notImplemented = new BaseFunction() {
             @Override
             public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+                if (ScriptableObject.getProperty(env, "RHINODO_IGNORE_NOT_IMPLEMENTED_EXTENSIONS") != null) {
+                    return cx.newObject(scope);
+                }
                 throw new NotImplementedException();
             }
         };
