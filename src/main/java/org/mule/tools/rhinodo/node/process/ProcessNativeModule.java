@@ -11,6 +11,7 @@ package org.mule.tools.rhinodo.node.process;
 import org.mozilla.javascript.*;
 import org.mule.tools.rhinodo.impl.ExitCallbackExecutor;
 import org.mule.tools.rhinodo.node.AbstractNativeModule;
+import org.mule.tools.rhinodo.node.process.console.CreateConsoleInputAndOutput;
 
 import java.util.Queue;
 
@@ -31,7 +32,7 @@ public class ProcessNativeModule extends AbstractNativeModule {
     }
 
     @Override
-    protected void populateModule(Scriptable module, Queue<Function> asyncFunctionQueue) {
+    protected void populateModule(final Scriptable module, final Queue<Function> asyncFunctionQueue) {
 
         ScriptableObject.putProperty(module, "env", env);
 
@@ -46,7 +47,15 @@ public class ProcessNativeModule extends AbstractNativeModule {
         ScriptableObject.putProperty(versions, "openssl", Context.toString("1.0.0e-fips"));
         ScriptableObject.putProperty(module, "versions", versions);
 
-        ScriptableObject.putProperty(module, "nextTick", new NextTick(asyncFunctionQueue));
+        ScriptableObject.putProperty(module, "binding", new ProcessBinding(asyncFunctionQueue));
+
+        NextTick nextTick = new NextTick(asyncFunctionQueue);
+
+        nextTick.call(getContext(),getScope(),getScope(),new Object[]{
+                new CreateConsoleInputAndOutput(getContext(), module, getScope(), asyncFunctionQueue)
+        });
+
+        ScriptableObject.putProperty(module, "nextTick", nextTick);
         ScriptableObject.putProperty(module, "cwd", new Cwd());
         ScriptableObject.putProperty(module, "umask", new BaseFunction() {
             @Override
@@ -55,6 +64,8 @@ public class ProcessNativeModule extends AbstractNativeModule {
                 return 0xFF;
             }
         });
+
+        // TODO Make it work with EventEmitter
         ScriptableObject.putProperty(module, "on", new BaseFunction() {
             @Override
             public Object call(final Context cx, final Scriptable scope,
@@ -85,7 +96,6 @@ public class ProcessNativeModule extends AbstractNativeModule {
             }
         });
 
-        ScriptableObject.putProperty(module, "stdout", getContext().newObject(getScope()));
-
     }
+
 }
