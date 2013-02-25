@@ -12,18 +12,18 @@ In order to build, execute the following command:
 Once build just set the `RHINODO_HOME` variable to where the `uberjar` can be found. Usually, that would be you `target` folder.
 
 ```sh
-    $ export RHINODO='path/to/rhinodo/target'
+export RHINODO='path/to/rhinodo/target'
 ```
 
 And after that just run:
 
 ```sh
-    $ ./rhinodo
+./rhinodo
 ```
 
 In case you want to connect to it for remote debuggig, you can use:
 ```sh
-    $ ./rhinodo-debug
+./rhinodo-debug
 ``` 
 
 and point your IDE to port 5555.
@@ -38,6 +38,11 @@ Some native modules are implemented using Java, others using Javascript.
 
 ### How Node.js async model has been implemented?
 A queue is used to keep track of all the callback functions that need to be executed. When the queue is empty the program has ended as there is no more code to execute :)
+
+### What's the roadmap?
+The idea is that in a near future all the necessary `.js` files will be obtained from the official node repo. 
+In order to do that, I plan to add the repository as a Git submodule but it won't be an easy task. Once thatthe node
+repo is embedded, it can be used to run node.js tests and Rhinodo is.
 
 ##Misc 
 
