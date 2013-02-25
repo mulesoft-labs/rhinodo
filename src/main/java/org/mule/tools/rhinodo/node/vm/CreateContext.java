@@ -25,12 +25,15 @@ public class CreateContext extends BaseFunction {
     @Override
     public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
 
-        ScriptableObject initialContents = (ScriptableObject) args[0];
         NativeObject newGlobal = new NativeObject();
 
-        for (Object o : initialContents.getAllIds()) {
-            String s = (String) o;
-            ScriptableObject.putProperty(newGlobal, s, ScriptableObject.getProperty(initialContents, s));
+        if (args.length == 1) {
+            ScriptableObject initialContents = (ScriptableObject) args[0];
+
+            for (Object o : initialContents.getAllIds()) {
+                String s = (String) o;
+                ScriptableObject.putProperty(newGlobal, s, ScriptableObject.getProperty(initialContents, s));
+            }
         }
 
         return newGlobal;
