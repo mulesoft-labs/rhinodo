@@ -44,6 +44,12 @@ The idea is that in a near future all the necessary `.js` files will be obtained
 In order to do that, the plan to add the repository as a Git submodule (it won't be an easy task). Once the node
 repo is embedded, it can be used to run node.js tests.
 
+### What has been done using it?
+
+  * [brunch-maven-plugin](https://github.com/mulesoft/brunch-maven-plugin)
+  * [jshint-maven-plugin](https://github.com/mulesoft/jshint-maven-plugin)
+  * [recess-maven-plugin](https://github.com/mulesoft/recess-maven-plugin)
+
 ##Misc 
 
 ### Authors
