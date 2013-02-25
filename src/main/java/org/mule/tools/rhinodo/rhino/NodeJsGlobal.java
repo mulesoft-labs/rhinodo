@@ -10,6 +10,7 @@ package org.mule.tools.rhinodo.rhino;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.commonjs.module.Require;
 import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider;
 import org.mozilla.javascript.tools.shell.Global;
@@ -24,6 +25,16 @@ import java.util.List;
 import java.util.Map;
 
 public class NodeJsGlobal extends Global {
+
+    public NodeJsGlobal()
+    {
+        super();
+    }
+
+    public NodeJsGlobal(Context cx) {
+        super(cx);
+    }
+
     @Override
     public Require installRequire(Context cx, List<String> modulePath, boolean sandboxed) {
         return super.installRequire(cx, modulePath, sandboxed);
