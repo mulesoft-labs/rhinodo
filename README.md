@@ -3,10 +3,30 @@
 ### What is Rhinodo? 
 The basic idea behind Rhinodo is to enable running 'node.js' modules in the JVM. So it can be said that it's a compatibility layer that allows you to run 'node' using Mozilla's 'rhino' Javascript implementation. So, it can be said that Rhinodo is to Node what JRuby is to Ruby.
 
-### How to build?
+### How to build
 In order to build, execute the following command:
 
     mvn clean install
+
+### How to run
+Once build just set the `RHINODO_HOME` variable to where the `uberjar` can be found. Usually, that would be you `target` folder.
+
+```sh
+    $ export RHINODO='path/to/rhinodo/target'
+```
+
+And after that just run:
+
+```sh
+    $ ./rhinodo
+```
+
+In case you want to connect to it for remote debuggig, you can use:
+```sh
+    $ ./rhinodo-debug
+``` 
+
+and point your IDE to port 5555.
 
 ## Useful info
 
