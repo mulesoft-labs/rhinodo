@@ -243,13 +243,13 @@ public class NodeRequireTest {
      * Test require.extensions existence
      */
     @Test
-    public void testRequireExtensions() throws Exception {
+    public void extensions() throws Exception {
         ContextFactory contextFactory = new ContextFactory();
         contextFactory.call(new ContextAction() {
             @Override
             public Object run(Context cx) {
                 final Queue asyncCallback = mock(Queue.class);
-                final ScriptableObject globalScope = new NodeJsGlobal();
+                final ScriptableObject globalScope = new NodeJsGlobal(cx);
                 final ModuleScriptProvider moduleScriptProvider = mock(ModuleScriptProvider.class);
                 final Script pre = mock(Script.class);
                 final Script post = mock(Script.class);
