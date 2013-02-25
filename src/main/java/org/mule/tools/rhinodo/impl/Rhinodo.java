@@ -9,6 +9,7 @@
 package org.mule.tools.rhinodo.impl;
 
 import org.mozilla.javascript.*;
+import org.mozilla.javascript.commonjs.module.Require;
 import org.mozilla.javascript.tools.debugger.Main;
 import org.mule.tools.rhinodo.api.ConsoleProvider;
 import org.mule.tools.rhinodo.api.NodeModuleProvider;
@@ -62,13 +63,19 @@ public class Rhinodo {
 
                 Scriptable envAsScriptable = mapToScriptable(ctx, global, env);
 
-                global.installNodeJsRequire(ctx, envAsScriptable, nodeModuleProvider,
+                Require require = global.installNodeJsRequire(ctx, envAsScriptable, nodeModuleProvider,
                         new NodeRequireBuilder(asyncFunctionQueue, exitCallbackExecutor), false);
+
+                //TODO Get a real buffer here...
+                ScriptableObject.putProperty(global, "Buffer", Context.javaToJS(ctx.newObject(global), global));
+                Scriptable buffer = (Scriptable) require.call(ctx, global, global, new Object[]{Context.javaToJS("buffer", global)});
+                ScriptableObject.putProperty(global, "Buffer", ScriptableObject.getProperty(buffer,"Buffer"));
 
                 Scriptable console = consoleProvider.getConsoleAsScriptable(global);
                 ScriptableObject.putProperty(global, "console", console);
 
-                callback.call(ctx, global, global, new Object[]{});
+                // Adding user's callback to the async function queue :D
+                asyncFunctionQueue.add(callback);
 
                 Function asyncToExecute;
                 while ( (asyncToExecute = asyncFunctionQueue.poll()) != null ) {
