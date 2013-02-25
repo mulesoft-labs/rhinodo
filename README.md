@@ -41,8 +41,8 @@ A queue is used to keep track of all the callback functions that need to be exec
 
 ### What's the roadmap?
 The idea is that in a near future all the necessary `.js` files will be obtained from the official node repo. 
-In order to do that, I plan to add the repository as a Git submodule but it won't be an easy task. Once thatthe node
-repo is embedded, it can be used to run node.js tests and Rhinodo is.
+In order to do that, the plan to add the repository as a Git submodule (it won't be an easy task). Once the node
+repo is embedded, it can be used to run node.js tests.
 
 ##Misc 
 
