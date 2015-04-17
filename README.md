@@ -12,7 +12,7 @@ In order to build, execute the following command:
 Once build just set the `RHINODO_HOME` variable to where the `uberjar` can be found. Usually, that would be you `target` folder.
 
 ```sh
-export RHINODO='path/to/rhinodo/target'
+export RHINODO_HOME='path/to/rhinodo/target'
 ```
 
 And after that just run:
