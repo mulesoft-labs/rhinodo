@@ -101,6 +101,10 @@ public class JarURIHelper {
             }
 
             File f = new File(destDir, file.getName());
+
+            if (!f.toPath().normalize().startsWith(destDir.toPath().normalize())) {
+                throw new IOException("Bad zip entry");
+            }
             if (file.isDirectory()) { // if its a directory, create it
                 f.mkdirs();
                 continue;
