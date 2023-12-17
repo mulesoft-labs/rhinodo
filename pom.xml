@@ -123,12 +123,12 @@
         <repository>
             <id>mulesoft-releases</id>
             <name>MuleSoft Release Repository</name>
-            <url>http://repository.mulesoft.org/releases/</url>
+            <url>https://repository.mulesoft.org/releases/</url>
         </repository>
         <snapshotRepository>
             <id>mulesoft-snapshots</id>
             <name>MuleSoft Snapshot Repository</name>
-            <url>http://repository.mulesoft.org/snapshots/</url>
+            <url>https://repository.mulesoft.org/snapshots/</url>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
